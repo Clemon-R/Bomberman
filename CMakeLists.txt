@@ -20,7 +20,7 @@ add_executable(
 	${CMAKE_SOURCE_DIR}/src/main.cpp
 )
 if (UNIX)
-	target_link_libraries(bomberman ${CMAKE_SOURCE_DIR}/libIrrlicht.so)
+	target_link_libraries(bomberman ${CMAKE_SOURCE_DIR}/libIrrlicht.so.1.8)
 endif (UNIX)
 if (WIN32)
 	target_link_libraries(bomberman ${CMAKE_SOURCE_DIR}/Irrlicht.dll)
