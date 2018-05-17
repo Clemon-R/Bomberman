@@ -7,7 +7,7 @@ using namespace video;
 using namespace io;
 using namespace gui;
 
-int	main()
+int	main(int argc, char **argv)
 {
 	IrrlichtDevice *device =
         createDevice( video::EDT_SOFTWARE, dimension2d<u32>(640, 480), 16,
