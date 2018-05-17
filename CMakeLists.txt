@@ -1,22 +1,24 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 2.6)
 
 project(bomberman)
 
 set(CMAKE_TYPE_BUILD Debug)
-
 set(EXECUTABLE_OUTPUT_PATH, "./")
-set(IRRLITCH, "irrlicht")
 
-if (UNIX)
-  set(IRRLITCH_BIN, "./irrlicht-1.8.4/lib/Linux/")
-endif (UNIX)
-if (WIN32)
-  set(IRRLITCH_BIN, "./irrlicht-1.8.4/lib/Win32-gcc/")
-endif (WIN32)
+if (CMAKE_COMPILER_IS_GNUCXX)
+    set(CMAKE_CXX_FLAGS "-L${CMAKE_SOURCE_DIR}/libs/linux/ -lIrrlicht -Iinc")
+endif (CMAKE_COMPILER_IS_GNUCXX)
 
-set(CMAKE_CXX_FLAGS, "{CMAKE_CXX_FLAGS} -L${IRRLITCH_BIN} -lIrrlicht -Iinc ttt -std=c++14")
+configure_file(
+	${CMAKE_SOURCE_DIR}/inc/main.hpp.in
+	${CMAKE_SOURCE_DIR}/inc/main.hpp
+)
 
 add_executable(
-  bomberman
-  src/main.cpp
-  )
+	bomberman
+	${CMAKE_SOURCE_DIR}/src/main.cpp
+)
+#if (UNIX)
+	target_link_libraries(bomberman ${CMAKE_SOURCE_DIR}/libs/linux/libIrrlicht.so)
+	install(TARGETS bomberman DESTINATION ${CMAKE_SOURCE_DIR}/bin/linux)
+#endif (UNIX)
