@@ -2,14 +2,14 @@ cmake_minimum_required(VERSION 2.6)
 
 project(bomberman)
 
-set(CMAKE_TYPE_BUILD Release)
+set(CMAKE_TYPE_BUILD DEBUG)
+set(TYPE_BUILD "DEBUG")
 set(EXECUTABLE_OUTPUT_PATH, "./")
 
 set(CMAKE_CXX_FLAGS " -Iinc")
 set(CMAKE_CXX_FLAGS_RELEASE " -Iinc")
 
-set(CMAKE_INSTALL_RPATH "${CMAKE_SOURCE_DIR}/")
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath -Wl,${CMAKE_SOURCE_DIR}/libs")
 
 configure_file(
 	${CMAKE_SOURCE_DIR}/inc/main.hpp.in
@@ -20,11 +20,22 @@ add_executable(
 	bomberman
 	${CMAKE_SOURCE_DIR}/src/main.cpp
 )
+
 if (UNIX)
-	SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath -Wl,${CMAKE_SOURCE_DIR}")
-	target_link_libraries(bomberman ${CMAKE_SOURCE_DIR}/libIrrlicht.so.1.8)
+	if (TYPE_BUILD STREQUAL "DEBUG")
+		set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/bin/linux")
+	endif (TYPE_BUILD STREQUAL "DEBUG")
+	if (TYPE_BUILD STREQUAL "RELEASE")
+		set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}/bin/bomberman")
+	endif (TYPE_BUILD STREQUAL "RELEASE")
+	target_link_libraries(bomberman ${CMAKE_SOURCE_DIR}/libs/libIrrlicht.so.1.8)
 endif (UNIX)
 if (WIN32)
-	set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/bomberman")
-	target_link_libraries(bomberman ${CMAKE_SOURCE_DIR}/Irrlicht.dll)
+	if (TYPE_BUILD STREQUAL "DEBUG")
+		set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/bin/win")
+	endif (TYPE_BUILD STREQUAL "DEBUG")
+	target_link_libraries(bomberman ${CMAKE_SOURCE_DIR}/libs/Irrlicht.dll)
 endif (WIN32)
+
+install(TARGETS bomberman DESTINATION .)
+install(FILES libs/libIrrlicht.so.1.8 libs/Irrlicht.dll DESTINATION libs)
