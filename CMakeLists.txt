@@ -8,7 +8,7 @@ set(EXECUTABLE_OUTPUT_PATH, "./")
 
 set(CMAKE_CXX_FLAGS " -Iinc")
 
-SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows -Wl,-rpath -Wl,.")
+SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath -Wl,. -Wl,-subsystem,windows")
 
 configure_file(
 	${CMAKE_SOURCE_DIR}/inc/main.hpp.in
