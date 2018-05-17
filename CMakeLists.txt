@@ -8,8 +8,6 @@ set(EXECUTABLE_OUTPUT_PATH, "./")
 
 set(CMAKE_CXX_FLAGS " -Iinc")
 
-SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath -Wl,. -Wl,-subsystem,windows")
-
 configure_file(
 	${CMAKE_SOURCE_DIR}/inc/main.hpp.in
 	${CMAKE_SOURCE_DIR}/inc/main.hpp
@@ -21,6 +19,7 @@ add_executable(
 )
 
 if (UNIX)
+	SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath -Wl,.")
 	if (TYPE_BUILD STREQUAL "DEBUG")
 		set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/bin/linux")
 	endif (TYPE_BUILD STREQUAL "DEBUG")
@@ -30,6 +29,7 @@ if (UNIX)
 	target_link_libraries(bomberman ${CMAKE_SOURCE_DIR}/libIrrlicht.so.1.8)
 endif (UNIX)
 if (WIN32)
+	SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-subsystem,windows")
 	if (TYPE_BUILD STREQUAL "DEBUG")
 		set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/bin/win")
 	endif (TYPE_BUILD STREQUAL "DEBUG")
