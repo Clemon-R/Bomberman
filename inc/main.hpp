@@ -8,5 +8,5 @@
 #ifndef MAIN_HPP_
 	#define MAIN_HPP_
 
-
+	#include "game/game.hpp"
 #endif /* !MAIN_HPP_ */
