@@ -53,9 +53,14 @@ int	main(int argc, char **argv)
 	std::cout << "main: init of the project...\n";
 	try{
 		project.reset(new game());
+		if (!project)
+			return (84);
+		project->init_of_graphic();
+		project->run();
 	}
 	catch (const std::exception &error){
 		std::cerr << "main: error happend on the game.\n";
+		std::cerr << error.what() << std::endl;
 		return (84);
 	}
 	return (0);

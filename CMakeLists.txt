@@ -15,6 +15,7 @@ set(BOMBERMAN_GAME
 set(BOMBERMAN_SRC
 	${BOMBERMAN_GAME}
 	src/main.cpp
+	src/exception.cpp
 )
 
 add_executable(
