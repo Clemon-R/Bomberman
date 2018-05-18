@@ -51,7 +51,6 @@ int	main(int argc, char **argv)
 	std::unique_ptr<game>	project;
 
 	std::cout << "main: init of the project...\n";
-	demo();
 	try{
 		project.reset(new game());
 		if (!project)

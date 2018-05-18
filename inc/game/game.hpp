@@ -9,6 +9,8 @@
 	#define GAME_HPP_
 
 	#include "irrlicht/irrlicht.h"
+	#include "game/config.hpp"
+	#include "saver.hpp"
 	#include "exception.hpp"
 	#include <iostream>
 	#include <memory>
@@ -26,5 +28,6 @@ public:
 	void	run();
 private:
 	std::unique_ptr<irr::IrrlichtDevice>	_graphic;
+	std::unique_ptr<config>	_config;
 };
 #endif /* !GAME_HPP_ */

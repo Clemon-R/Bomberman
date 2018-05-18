@@ -7,7 +7,7 @@
 
 #include "game/game.hpp"
 
-game::game() : _graphic(nullptr)
+game::game() : _graphic(nullptr), _config(saver::load_config())
 {
 	std::cout << "game: init...\n";
 	std::cout << "game: initiated\n";
@@ -16,6 +16,8 @@ game::game() : _graphic(nullptr)
 game::~game()
 {
 	std::cout << "game: destructing...\n";
+	if (_config)
+		saver::save_config(*_config);
 	std::cout << "game: destructed\n";
 }
 
@@ -25,7 +27,7 @@ void	game::init_of_graphic()
 	_graphic.reset(
 		irr::createDevice(
 			irr::video::EDT_SOFTWARE,
-			irr::core::dimension2d<irr::u32>(640, 480),
+			irr::core::dimension2d<irr::u32>(std::atoi(_config->WIDTH.c_str()), std::atoi(_config->HEIGHT.c_str())),
 			16,
 			FULL_SCREEN,
 			false,

@@ -6,16 +6,18 @@ set(CMAKE_TYPE_BUILD DEBUG)
 set(TYPE_BUILD "${CMAKE_TYPE_BUILD}")
 set(EXECUTABLE_OUTPUT_PATH, "./")
 
-set(CMAKE_CXX_FLAGS " -Iinc -std=c++14")
+set(CMAKE_CXX_FLAGS " -Iinc -std=c++14 -g3")
 
 set(BOMBERMAN_GAME
 	src/game/game.cpp
+	src/game/config.cpp
 )
 
 set(BOMBERMAN_SRC
 	${BOMBERMAN_GAME}
 	src/main.cpp
 	src/exception.cpp
+	src/saver.cpp
 )
 
 add_executable(
