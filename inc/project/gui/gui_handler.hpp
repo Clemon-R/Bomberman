@@ -12,7 +12,8 @@
 
 enum	CodeEventGui
 {
-	EXIT = 101
+	EXIT = 101,
+	PLAY
 };
 
 class	gui_handler : public irr::IEventReceiver

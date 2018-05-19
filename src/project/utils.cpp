@@ -6,6 +6,19 @@
 */
 
 #include "project/utils.hpp"
+#include "project/database.hpp"
+
+void	utils::add_button(irr::gui::IGUIEnvironment *env, irr::video::ITexture *img, const irr::core::position2di &pos, irr::s32 action)
+{
+	if (!img)
+		return;
+	irr::gui::IGUIButton *btn = env->addButton(utils::get_pos(img, pos), nullptr, action, nullptr, nullptr);
+	if (!btn)
+		return;
+	btn->setImage(img);
+	btn->setUseAlphaChannel(true);
+	btn->setDrawBorder(0);
+}
 
 irr::core::rect<irr::s32>	utils::get_center_img(irr::video::ITexture *img, const irr::core::position2di &size)
 {

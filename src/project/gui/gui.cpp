@@ -18,11 +18,14 @@ _config(config), _driver(nullptr), _env(nullptr), _handler(graphic)
 	_env = _graphic->getGUIEnvironment();
 	if (!_driver || !_env)
 		throw exception("Impossible to find the driver");
-	irr::video::ITexture* images = database::load_img("btn_exit", ".png");
-	irr::gui::IGUIButton *btn = _env->addButton(utils::get_pos(images, irr::core::position2di((_config->WINDOW_WIDTH - images->getSize().Width) / 2, (_config->WINDOW_HEIGHT - images->getSize().Height) / 2)), nullptr, CodeEventGui::EXIT, nullptr, nullptr);
-	btn->setImage(images);
-	btn->setUseAlphaChannel(true);
-	btn->setDrawBorder(0);
+	irr::video::ITexture* img = database::load_img("btn_exit", ".png");
+	if (!img)
+		throw exception("Impossible to load image");
+	utils::add_button(_env, img, irr::core::position2di((_config->WINDOW_WIDTH - img->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 + img->getSize().Height / 2), CodeEventGui::EXIT);
+	img = database::load_img("btn_play", ".png");
+	if (!img)
+		throw exception("Impossible to load image");
+	utils::add_button(_env, img, irr::core::position2di((_config->WINDOW_WIDTH - img->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 - img->getSize().Height), CodeEventGui::PLAY);
 	_graphic->setEventReceiver(&_handler);
 	std::cout << "gui: initiated\n";
 }
