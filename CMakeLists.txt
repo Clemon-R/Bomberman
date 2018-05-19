@@ -54,4 +54,6 @@ if (WIN32)
 endif (WIN32)
 
 install(TARGETS bomberman DESTINATION .)
-install(FILES ressources/images/bg.jpg DESTINATION ressources/images)
+install(FILES ressources/images/bg_1.jpg ressources/images/bg_2.jpg ressources/images/bg_3.jpg DESTINATION ressources/images)
+install(FILES ressources/images/btn_exit_1.png ressources/images/btn_exit_2.png ressources/images/btn_exit_3.png DESTINATION ressources/images)
+install(FILES ressources/images/btn_play_1.png ressources/images/btn_play_2.png ressources/images/btn_play_3.png DESTINATION ressources/images)
