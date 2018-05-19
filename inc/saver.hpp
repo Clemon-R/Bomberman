@@ -12,7 +12,7 @@
 
 	#include <iostream>
 	#include <map>
-	#include "game/config.hpp"
+	#include "project/config.hpp"
 	#include "exception.hpp"
 
 class	saver

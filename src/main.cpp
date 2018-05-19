@@ -48,18 +48,18 @@ static char	demo()
 
 int	main(int argc, char **argv)
 {
-	std::unique_ptr<game>	project;
+	std::unique_ptr<project>	tmp;
 
 	std::cout << "main: init of the project...\n";
 	try{
-		project.reset(new game());
-		if (!project)
+		tmp.reset(new project());
+		if (!tmp)
 			return (84);
-		project->init_of_graphic();
-		project->run();
+		tmp->init_of_graphic();
+		tmp->run();
 	}
 	catch (const std::exception &error){
-		std::cerr << "main: error happend on the game.\n";
+		std::cerr << "main: error happend on the project.\n";
 		std::cerr << error.what() << std::endl;
 		return (84);
 	}

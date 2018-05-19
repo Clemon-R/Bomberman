@@ -1,0 +1,38 @@
+/*
+** EPITECH PROJECT, 2018
+** indie studio
+** File description:
+** utils
+*/
+
+#include "project/utils.hpp"
+
+irr::core::rect<irr::s32>	utils::get_center_img(irr::video::ITexture *img, const irr::core::position2di &size)
+{
+	irr::core::rect<irr::s32>	result(0, 0, 0, 0);
+	std::size_t	scale_x = 1;
+	std::size_t	scale_y = 1;
+
+	if (!img)
+		return (result);
+	scale_x = img->getSize().Width / size.X;
+	if (scale_x == 0)
+		scale_x = 1;
+	scale_y = img->getSize().Height / size.Y;
+	if (scale_y == 0)
+		scale_y = 1;
+	result.UpperLeftCorner = irr::core::position2di(img->getSize().Width - scale_x * size.X, img->getSize().Height - scale_y * size.Y);
+	result.LowerRightCorner = irr::core::position2di(img->getSize().Width, img->getSize().Height);
+	return (result);
+}
+
+irr::core::rect<irr::s32>	utils::get_pos(irr::video::ITexture *elem, const irr::core::position2di &pos)
+{
+	irr::core::rect<irr::s32>	result(0, 0, 0, 0);
+
+	if (!elem)
+		return (result);
+	result.UpperLeftCorner = irr::core::position2di(pos.X, pos.Y);
+	result.LowerRightCorner = irr::core::position2di(pos.X + elem->getSize().Width, pos.Y + elem->getSize().Height);
+	return (result);
+}

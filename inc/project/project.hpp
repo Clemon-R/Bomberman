@@ -5,29 +5,31 @@
 ** game
 */
 
-#ifndef GAME_HPP_
-	#define GAME_HPP_
+#ifndef PROJECT_HPP_
+	#define PROJECT_HPP_
 
 	#include "irrlicht/irrlicht.h"
-	#include "game/config.hpp"
+	#include "project/config.hpp"
+	#include "project/gui/gui.hpp"
+	#include "project/interface.hpp"
 	#include "saver.hpp"
 	#include "exception.hpp"
 	#include <iostream>
 	#include <memory>
 
-	#define	FULL_SCREEN	false
 	#define	VERTICAL_SYNC	false
 
-class	game
+class	project
 {
 public:
-	game();
-	~game();
+	project();
+	~project();
 
 	void	init_of_graphic();
 	void	run();
 private:
 	std::unique_ptr<irr::IrrlichtDevice>	_graphic;
 	std::unique_ptr<config>	_config;
+	std::unique_ptr<interface>	_interface;
 };
-#endif /* !GAME_HPP_ */
+#endif /* !PROJECT_HPP_ */

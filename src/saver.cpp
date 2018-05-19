@@ -10,8 +10,8 @@
 #include <stdio.h>
 
 std::map<std::string, std::string config::*>	saver::_config_params = {
-	{"WINDOW_WIDTH", &config::WIDTH},
-	{"WINDOW_HEIGHT", &config::HEIGHT}
+	{"SCALE", &config::SCALE},
+	{"FULL_SCREEN", &config::FULL_SCREEN}
 };
 
 void	saver::save_config(config &config)
@@ -24,8 +24,8 @@ void	saver::save_config(config &config)
 	file.open(CONFIG_FILE);
 	if (!file.is_open())
 		throw exception("Impossible to write the config");
-	file << "WINDOW_WIDTH=" << config.WIDTH << std::endl;
-	file << "WINDOW_HEIGHT=" << config.HEIGHT << std::endl;
+	for (const auto &elem : _config_params)
+		file << elem.first << "=" << config.*(elem.second) << std::endl;
 	file.close();
 	std::cout << "saver: config saved\n";
 }

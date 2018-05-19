@@ -8,13 +8,21 @@ set(EXECUTABLE_OUTPUT_PATH, "./")
 
 set(CMAKE_CXX_FLAGS " -Iinc -std=c++14 -g3")
 
-set(BOMBERMAN_GAME
-	src/game/game.cpp
-	src/game/config.cpp
+set(BOMBERMAN_GUI
+	src/project/gui/gui.cpp
+	src/project/gui/gui_handler.cpp
+)
+
+set(BOMBERMAN_PROJECT
+	src/project/project.cpp
+	src/project/config.cpp
+	src/project/database.cpp
+	src/project/utils.cpp
+	${BOMBERMAN_GUI}
 )
 
 set(BOMBERMAN_SRC
-	${BOMBERMAN_GAME}
+	${BOMBERMAN_PROJECT}
 	src/main.cpp
 	src/exception.cpp
 	src/saver.cpp
@@ -46,4 +54,4 @@ if (WIN32)
 endif (WIN32)
 
 install(TARGETS bomberman DESTINATION .)
-install(FILES test/sydney.bmp test/sydney.md2 DESTINATION test)
+install(FILES ressources/images/bg.jpg DESTINATION ressources/images)
