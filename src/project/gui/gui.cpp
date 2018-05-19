@@ -18,8 +18,8 @@ _config(config), _driver(nullptr), _env(nullptr), _handler(graphic)
 	_env = _graphic->getGUIEnvironment();
 	if (!_driver || !_env)
 		throw exception("Impossible to find the driver");
-	irr::video::ITexture* images = database::load_img("btn", ".png");
-	irr::gui::IGUIButton *btn = _env->addButton(utils::get_pos(images, irr::core::position2di((_config->WINDOW_WIDTH - images->getSize().Width) / 2, (_config->WINDOW_HEIGHT - images->getSize().Height) / 2)), nullptr, CodeEventGui::EXIT, L"Exit", nullptr);
+	irr::video::ITexture* images = database::load_img("btn_exit", ".png");
+	irr::gui::IGUIButton *btn = _env->addButton(utils::get_pos(images, irr::core::position2di((_config->WINDOW_WIDTH - images->getSize().Width) / 2, (_config->WINDOW_HEIGHT - images->getSize().Height) / 2)), nullptr, CodeEventGui::EXIT, nullptr, nullptr);
 	btn->setImage(images);
 	btn->setUseAlphaChannel(true);
 	btn->setDrawBorder(0);
