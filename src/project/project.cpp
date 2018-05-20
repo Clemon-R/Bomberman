@@ -62,8 +62,6 @@ void	project::run()
 		driver->beginScene(true, true, irr::video::SColor(255,100,101,140));
 		if (_interface)
 			_interface->run();
-		if (_graphic->getGUIEnvironment())
-			_graphic->getGUIEnvironment()->drawAll();
 		driver->endScene();
 	}
 	std::cout << "project: end running\n";

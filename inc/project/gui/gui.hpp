@@ -11,8 +11,17 @@
 	#include "irrlicht/irrlicht.h"
 	#include "project/interface.hpp"
 	#include "project/config.hpp"
+class	gui_handler;
 	#include "project/gui/gui_handler.hpp"
 	#include <iostream>
+	#include <memory>
+
+enum	GuiState
+{
+	MAIN,
+	GAME,
+	BREAK
+};
 
 class	gui : public interface
 {
@@ -21,12 +30,20 @@ public:
 	~gui();
 
 	void	run() override;
+	void	set_state(GuiState state);
 private:
+	void	run_gui();
+	void	run_game();
+
+	void	main_menu();
+	void	break_menu();
+	void	game_menu();
+
 	irr::IrrlichtDevice	*_graphic;
 	irr::video::IVideoDriver	*_driver;
 	irr::gui::IGUIEnvironment	*_env;
-	gui_handler			_handler;
-
+	std::unique_ptr<gui_handler>	_handler;
 	config			*_config;
+	GuiState		_state;
 };
 #endif /* !GUI_HPP_ */
