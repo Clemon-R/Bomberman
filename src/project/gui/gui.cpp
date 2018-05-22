@@ -43,12 +43,26 @@ void	gui::run_gui()
 
 void	gui::run_game()
 {
+	irr::video::ITexture *img = database::load_img("break", ".png");
+
+	if (!img)
+		throw exception("Impossible to load the break background");
 	if (!_game)
 		_game.reset(new game(_graphic, _config));
 	if (_game){
 		if (_state == GuiState::GAME)
 			_game->run();
 		_game->spawnAll();
+		if (_state == GuiState::BREAK){
+			_driver->draw2DImage(
+				img,
+				irr::core::position2di(0, 0),
+				utils::get_center_img(img, irr::core::position2di(_config->WINDOW_WIDTH, _config->WINDOW_HEIGHT)),
+				nullptr,
+				irr::video::SColor(255, 255, 255, 255),
+				true
+			);
+		}
 	}
 	_env->drawAll();
 }
