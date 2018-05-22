@@ -13,12 +13,17 @@ set(BOMBERMAN_GUI
 	src/project/gui/gui_handler.cpp
 )
 
+set(BOMBERMAN_GAME
+	src/project/game/game.cpp
+)
+
 set(BOMBERMAN_PROJECT
 	src/project/project.cpp
 	src/project/config.cpp
 	src/project/database.cpp
 	src/project/utils.cpp
 	${BOMBERMAN_GUI}
+	${BOMBERMAN_GAME}
 )
 
 set(BOMBERMAN_SRC

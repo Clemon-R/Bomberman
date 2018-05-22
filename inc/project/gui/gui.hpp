@@ -13,6 +13,7 @@
 	#include "project/config.hpp"
 class	gui_handler;
 	#include "project/gui/gui_handler.hpp"
+	#include "project/game/game.hpp"
 	#include <iostream>
 	#include <memory>
 
@@ -43,6 +44,7 @@ private:
 	irr::video::IVideoDriver	*_driver;
 	irr::gui::IGUIEnvironment	*_env;
 	std::unique_ptr<gui_handler>	_handler;
+	std::unique_ptr<game>		_game;
 	config			*_config;
 	GuiState		_state;
 };

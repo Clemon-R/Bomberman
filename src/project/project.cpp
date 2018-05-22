@@ -59,7 +59,7 @@ void	project::run()
 		throw exception("Impossible to get the video driver");
 	std::cout << "project: running...\n";
 	while (_graphic->run()){
-		driver->beginScene(true, true, irr::video::SColor(255,100,101,140));
+		driver->beginScene(true, true, irr::video::SColor(255,0,0,0));
 		if (_interface)
 			_interface->run();
 		driver->endScene();

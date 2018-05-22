@@ -43,7 +43,13 @@ void	gui::run_gui()
 
 void	gui::run_game()
 {
-
+	if (!_game)
+		_game.reset(new game(_graphic, _config));
+	if (_game){
+		if (_state == GuiState::GAME)
+			_game->run();
+		_game->spawnAll();
+	}
 	_env->drawAll();
 }
 
@@ -71,11 +77,11 @@ void	gui::main_menu()
 void	gui::break_menu()
 {
 	_env->clear();
-	irr::video::ITexture* img = database::load_img("btn_exit", ".png");
+	irr::video::ITexture* img = database::load_img("btn_leave", ".png");
 	if (!img)
 		throw exception("Impossible to load image");
 	utils::add_button(_env, img, irr::core::position2di((_config->WINDOW_WIDTH - img->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 + img->getSize().Height / 2), CodeEventGui::BACK);
-	img = database::load_img("btn_play", ".png");
+	img = database::load_img("btn_continue", ".png");
 	if (!img)
 		throw exception("Impossible to load image");
 	utils::add_button(_env, img, irr::core::position2di((_config->WINDOW_WIDTH - img->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 - img->getSize().Height), CodeEventGui::PLAY);
