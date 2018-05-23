@@ -17,7 +17,7 @@
 	#include <iostream>
 	#include <memory>
 
-	#define	VERTICAL_SYNC	true
+	#define	VERTICAL_SYNC	false
 
 class	project
 {

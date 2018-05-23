@@ -31,13 +31,19 @@ public:
 	void	generateFloor();
 	void	spawnAll();
 private:
+	void	drawWall();
+	void	setCamera();
+
 	irr::IrrlichtDevice	*_graphic;
 	irr::video::IVideoDriver	*_driver;
 	irr::gui::IGUIEnvironment	*_env;
+	irr::scene::ISceneManager	*_smgr;
 	std::list<std::tuple<GroundType, irr::video::ITexture *>>	_floor;
 	config			*_config;
 
-	std::size_t		_width;
-	std::size_t		_height;
+	std::size_t		_cell_width;
+	std::size_t		_cell_height;
+	std::size_t		_scale_width;
+	std::size_t		_scale_height;
 };
 #endif /* !GAME_HPP_ */
