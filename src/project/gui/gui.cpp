@@ -104,9 +104,12 @@ void	gui::set_state(GuiState state)
 	_state = state;
 	switch (state){
 		case GuiState::BREAK:
+		_game->pause();
 		break_menu();
 		break;
 		case GuiState::MAIN:
+		_game.release();
+		_graphic->getSceneManager()->clear();
 		main_menu();
 		break;
 		case GuiState::GAME:

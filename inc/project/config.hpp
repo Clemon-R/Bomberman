@@ -22,6 +22,10 @@ public:
 	std::size_t	WINDOW_HEIGHT = 480;
 	std::size_t	GAME_SCALE = 1;
 
+	std::size_t	TILE_SIZE = 0;
+	std::size_t	TILE_COUNT = 0;
+	std::size_t	GAME_AREA = 0;
+
 	void	refresh_config();
 };
 #endif /* !CONFIG_HPP_ */

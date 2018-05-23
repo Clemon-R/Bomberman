@@ -15,6 +15,7 @@ set(BOMBERMAN_GUI
 
 set(BOMBERMAN_GAME
 	src/project/game/game.cpp
+	src/project/game/player.cpp
 )
 
 set(BOMBERMAN_PROJECT

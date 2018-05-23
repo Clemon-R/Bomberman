@@ -10,6 +10,7 @@
 
 	#include "irrlicht/irrlicht.h"
 	#include "project/config.hpp"
+	#include "project/game/player.hpp"
 	#include <iostream>
 	#include <list>
 	#include <tuple>
@@ -30,9 +31,13 @@ public:
 	void	run();
 	void	generateFloor();
 	void	spawnAll();
+	void	pause();
 private:
+	void	play();
 	void	drawWall();
 	void	setCamera();
+
+	player	*_player;
 
 	irr::IrrlichtDevice	*_graphic;
 	irr::video::IVideoDriver	*_driver;
@@ -40,10 +45,6 @@ private:
 	irr::scene::ISceneManager	*_smgr;
 	std::list<std::tuple<GroundType, irr::video::ITexture *>>	_floor;
 	config			*_config;
-
-	std::size_t		_cell_width;
-	std::size_t		_cell_height;
-	std::size_t		_scale_width;
-	std::size_t		_scale_height;
+	bool			_break;
 };
 #endif /* !GAME_HPP_ */
