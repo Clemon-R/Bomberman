@@ -10,6 +10,7 @@
 
 	#include "irrlicht/irrlicht.h"
 	#include "project/config.hpp"
+	#include <iostream>
 
 class	player
 {
@@ -18,11 +19,19 @@ public:
 
 	void	refresh();
 	void	pause();
+
+	void	move_to(const irr::core::position2di &pos);
+
+	irr::core::position2di	get_position() const;
+	irr::core::position2di	get_real_position() const;
 private:
-	std::size_t		_speed;
+	void	play();
+
 	irr::core::vector3df	_rotate;
 	irr::scene::EMD2_ANIMATION_TYPE	_anim;
 
+	bool	_break;
+	irr::core::vector3df			_target;
 	config					*_config;
 	irr::IrrlichtDevice			*_graphic;
 	irr::video::IVideoDriver		*_driver;
