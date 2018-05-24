@@ -44,8 +44,6 @@ void	game::run()
 
 void	game::play()
 {
-	if (_player)
-		_player->refresh();
 }
 
 void	game::generateFloor()

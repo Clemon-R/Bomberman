@@ -7,12 +7,11 @@
 
 #include "project/gui/gui_handler.hpp"
 #include <iostream>
+#include <algorithm>
 
 gui_handler::gui_handler(irr::IrrlichtDevice *graphic, gui &gui) : _graphic(graphic), _gui(gui)
 {
 	std::cout << "gui_handler: new instant\n";
-	for (irr::u32 i=0;i < irr::KEY_KEY_CODES_COUNT; ++i)
-        	KeyIsDown[i] = false;
 }
 
 bool	gui_handler::OnEvent(const irr::SEvent& event)
@@ -63,13 +62,25 @@ bool	gui_handler::key_handler(const irr::SEvent& event)
 	if (!target)
 		return (true);
 	if (!event.KeyInput.PressedDown){
-		KeyIsDown[event.KeyInput.Key] = false;
-		target->stop();
+		if (_last.back() == event.KeyInput.Key)
+			target->stop();
+		_last.remove(event.KeyInput.Key);
+		if (_last.size() > 0)
+			move_handler(_last.back());
 		return (true);
 	}
-	if (KeyIsDown[event.KeyInput.Key])
-		return (true);
-	switch (event.KeyInput.Key){
+	if (!move_handler(event.KeyInput.Key))
+		return (false);
+	if (std::find(_last.begin(), _last.end(), event.KeyInput.Key) == _last.end())
+		_last.push_back(event.KeyInput.Key);
+	return (true);
+}
+
+bool	gui_handler::move_handler(int key)
+{
+	player	*target = _gui.get_game()->get_player();
+
+	switch (key){
 		case irr::KEY_UP:
 		target->move_to(irr::core::position2di(target->get_position().X, 28));
 		break;
@@ -85,7 +96,9 @@ bool	gui_handler::key_handler(const irr::SEvent& event)
 		case irr::KEY_RIGHT:
 		target->move_to(irr::core::position2di(1, target->get_position().Y));
 		break;
+
+		default:
+		return (false);
 	}
-	KeyIsDown[event.KeyInput.Key] = true;
 	return (true);
 }

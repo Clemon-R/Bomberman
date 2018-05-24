@@ -11,6 +11,7 @@
 	#include "irrlicht/irrlicht.h"
 class	gui;
 	#include "project/gui/gui.hpp"
+	#include <list>
 
 enum	CodeEventGui
 {
@@ -29,8 +30,10 @@ public:
 	bool	key_handler(const irr::SEvent& event);
 	bool	window_handler(const irr::SEvent& event);
 private:
+	bool	move_handler(int key);
+
 	irr::IrrlichtDevice	*_graphic;
 	gui			&_gui;
-	bool	KeyIsDown[irr::KEY_KEY_CODES_COUNT];
+	std::list<int>		_last;
 };
 #endif /* !GUI_HANDLER_HPP_ */

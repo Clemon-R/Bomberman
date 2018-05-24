@@ -27,6 +27,7 @@ public:
 	irr::core::position2di	get_real_position() const;
 private:
 	void	play();
+	irr::core::position2di	convert_pos(const irr::core::vector3df &pos) const;
 
 	irr::core::vector3df	_rotate;
 	irr::scene::EMD2_ANIMATION_TYPE	_anim;

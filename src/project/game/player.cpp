@@ -49,9 +49,13 @@ void	player::refresh()
 void	player::move_to(const irr::core::position2di &pos)
 {
 	int	delay = 0;
+	irr::core::position2di	old = convert_pos(_target);
 	irr::core::position2di	player = get_position();
 	irr::scene::ISceneNodeAnimator	*anim = nullptr;
 
+	if ((pos.X == old.X && pos.Y == old.Y) ||
+		(player.X == pos.X && player.Y == pos.Y))
+		return;
 	if (player.X != pos.X){
 		delay = (player.X - pos.X) * 100;
 		_rotate = irr::core::vector3df(0, delay < 0 ? -90 : 90, 0);
@@ -60,16 +64,8 @@ void	player::move_to(const irr::core::position2di &pos)
 		delay = (player.Y - pos.Y) * 100;
 		_rotate = irr::core::vector3df(0, delay < 0 ? 0 : 180, 0);
 	}
-	else
-		return;
-	if (delay < 0)
-		delay *= -1;
 	_target = irr::core::vector3df(static_cast<float>(pos.Y) * _config->TILE_SIZE, _design->getPosition().Y, static_cast<float>(pos.X) * _config->TILE_SIZE);
-	anim = _smgr->createFlyStraightAnimator(
-		_design->getPosition(),
-		_target,
-		delay
-	);
+	anim = _smgr->createFlyStraightAnimator(_design->getPosition(), _target, delay < 0 ? delay * -1 : delay);
 	if (anim){
 		_design->addAnimator(anim);
 		anim->drop();
@@ -82,26 +78,32 @@ void	player::move_to(const irr::core::position2di &pos)
 void	player::play()
 {
 	if (_design->getPosition().X != _target.X || _design->getPosition().Z != _target.Z)
-		move_to(irr::core::position2di(_target.Z / _config->TILE_SIZE,
-		_target.X / _config->TILE_SIZE));
+		move_to(convert_pos(_target));
+}
+
+irr::core::position2di	player::convert_pos(const irr::core::vector3df &pos) const
+{
+	return (irr::core::position2di(pos.Z / _config->TILE_SIZE,
+		pos.X / _config->TILE_SIZE));
 }
 
 void	player::stop()
 {
 	_design->removeAnimators();
 	_design->setMD2Animation(irr::scene::EMAT_STAND);
+	_target = _design->getPosition();
 }
 
 void	player::pause()
 {
 	_break = true;
-	stop();
+	_design->removeAnimators();
+	_design->setMD2Animation(irr::scene::EMAT_STAND);
 }
 
 irr::core::position2di	player::get_position() const
 {
-	return (irr::core::position2di(_design->getPosition().Z / _config->TILE_SIZE,
-		_design->getPosition().X / _config->TILE_SIZE));
+	return (convert_pos(_design->getPosition()));
 }
 
 irr::core::position2di	player::get_real_position() const
