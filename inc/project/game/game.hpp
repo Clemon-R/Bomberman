@@ -11,9 +11,11 @@
 	#include "irrlicht/irrlicht.h"
 	#include "project/config.hpp"
 	#include "project/game/player.hpp"
+class	game_handler;
 	#include <iostream>
 	#include <list>
 	#include <tuple>
+	#include <memory>
 
 enum	GroundType
 {
@@ -28,10 +30,14 @@ public:
 	game(irr::IrrlichtDevice *graphic, config *config);
 	~game();
 
+	player	*get_player();
+
 	void	run();
 	void	generateFloor();
 	void	spawnAll();
 	void	pause();
+
+	bool	is_break() const;
 private:
 	void	play();
 	void	drawWall();

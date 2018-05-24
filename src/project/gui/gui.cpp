@@ -19,7 +19,6 @@ _config(config), _driver(nullptr), _env(nullptr), _handler(std::make_unique<gui_
 	if (!_driver || !_env)
 		throw exception("Impossible to find the driver");
 	main_menu();
-	_graphic->setEventReceiver(_handler.get());
 	std::cout << "gui: initiated\n";
 }
 
@@ -69,8 +68,10 @@ void	gui::main_menu()
 
 	if (!img || !img1)
 		throw exception("Impossible to load image");
+	_env->clear();
 	utils::add_button(_env, img, irr::core::position2di((_config->WINDOW_WIDTH - img->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 + img->getSize().Height / 2), CodeEventGui::EXIT);
 	utils::add_button(_env, img1, irr::core::position2di((_config->WINDOW_WIDTH - img1->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 - img1->getSize().Height), CodeEventGui::PLAY);
+	_graphic->setEventReceiver(_handler.get());
 }
 
 void	gui::break_menu()
@@ -86,7 +87,7 @@ void	gui::break_menu()
 	_env->addImage(bg, irr::core::position2d<irr::s32>(0, 0));
 	utils::add_button(_env, img, irr::core::position2di((_config->WINDOW_WIDTH - img->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 + img->getSize().Height / 2), CodeEventGui::BACK);
 	utils::add_button(_env, img1, irr::core::position2di((_config->WINDOW_WIDTH - img1->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 - img1->getSize().Height), CodeEventGui::PLAY);
-
+	_graphic->setEventReceiver(_handler.get());
 }
 
 void	gui::game_menu()
@@ -116,4 +117,9 @@ void	gui::set_state(GuiState state)
 		game_menu();
 		break;
 	}
+}
+
+game	*gui::get_game() const
+{
+	return (_game.get());
 }

@@ -21,6 +21,7 @@ public:
 	void	pause();
 
 	void	move_to(const irr::core::position2di &pos);
+	void	stop();
 
 	irr::core::position2di	get_position() const;
 	irr::core::position2di	get_real_position() const;

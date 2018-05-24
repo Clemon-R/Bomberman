@@ -11,7 +11,7 @@
 #include "exception.hpp"
 
 game::game(irr::IrrlichtDevice *graphic, config *config) : _graphic(graphic), _config(config),
-_break(false)
+_break(false), _player(nullptr)
 {
 	std::cout << "game: init...\n";
 	_driver = _graphic->getVideoDriver();
@@ -21,7 +21,7 @@ _break(false)
 		throw exception("Impossible to find the driver");
 	generateFloor();
 	_player = new player(_graphic, _config);
-	_player->move_to(irr::core::position2di(_player->get_position().X, _player->get_position().Y + 13));
+	//_player->move_to(irr::core::position2di(_player->get_position().X, _player->get_position().Y + 13));
 	_player->refresh();
 	std::cout << "game: initiated\n";
 }
@@ -38,7 +38,6 @@ void	game::run()
 		play();
 		_break = false;
 	}
-	std::cout << "pos: x - " << _player->get_position().X << ", y - " << _player->get_position().Y << std::endl;
 	if (_player)
 		_player->refresh();
 }
@@ -108,4 +107,14 @@ void	game::pause()
 	if (_player)
 		_player->pause();
 	_break = true;
+}
+
+player	*game::get_player()
+{
+	return (_player);
+}
+
+bool	game::is_break() const
+{
+	return (_break);
 }

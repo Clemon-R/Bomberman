@@ -86,11 +86,16 @@ void	player::play()
 		_target.X / _config->TILE_SIZE));
 }
 
-void	player::pause()
+void	player::stop()
 {
 	_design->removeAnimators();
 	_design->setMD2Animation(irr::scene::EMAT_STAND);
+}
+
+void	player::pause()
+{
 	_break = true;
+	stop();
 }
 
 irr::core::position2di	player::get_position() const

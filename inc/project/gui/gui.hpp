@@ -32,6 +32,7 @@ public:
 
 	void	run() override;
 	void	set_state(GuiState state);
+	game	*get_game() const;
 private:
 	void	run_gui();
 	void	run_game();
