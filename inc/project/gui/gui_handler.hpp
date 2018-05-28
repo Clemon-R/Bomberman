@@ -16,9 +16,7 @@ class	gui;
 enum	CodeEventGui
 {
 	EXIT = 101,
-	PLAY,
-	PAUSE,
-	BACK
+	PLAY
 };
 
 class	gui_handler : public irr::IEventReceiver
@@ -26,14 +24,10 @@ class	gui_handler : public irr::IEventReceiver
 public:
 	gui_handler(irr::IrrlichtDevice *graphic, gui &gui);
 	bool	OnEvent(const irr::SEvent& event) override final;
-
-	bool	key_handler(const irr::SEvent& event);
-	bool	window_handler(const irr::SEvent& event);
 private:
-	bool	move_handler(int key);
+	bool	window_handler(const irr::SEvent& event);
 
 	irr::IrrlichtDevice	*_graphic;
 	gui			&_gui;
-	std::list<int>		_last;
 };
 #endif /* !GUI_HANDLER_HPP_ */

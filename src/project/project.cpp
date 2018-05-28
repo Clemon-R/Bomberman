@@ -22,6 +22,9 @@ project::~project()
 	std::cout << "project: destructing...\n";
 	if (_config)
 		saver::save_config(*_config);
+	_config.release();
+	_interface.release();
+	_graphic.release();
 	std::cout << "project: destructed\n";
 }
 
@@ -44,7 +47,7 @@ void	project::init_of_graphic()
 	_graphic->setWindowCaption(L"The bomberman - by Epitech students");
 	_graphic->setResizable(false);
 	database::set_config(_graphic.get(), _config.get());
-	_interface.reset(new gui(_graphic.get(),_config.get()));
+	_interface.reset(new gui(_graphic.get(),_config.get(), this));
 	std::cout << "project: graphic initiated\n";
 }
 
@@ -65,4 +68,9 @@ void	project::run()
 		driver->endScene();
 	}
 	std::cout << "project: end running\n";
+}
+
+void	project::set_interface(interface *window)
+{
+	_interface.reset(window);
 }

@@ -13,40 +13,31 @@
 	#include "project/config.hpp"
 class	gui_handler;
 	#include "project/gui/gui_handler.hpp"
+class	game;
 	#include "project/game/game.hpp"
+class	project;
+	#include "project/project.hpp"
 	#include <iostream>
 	#include <memory>
-
-enum	GuiState
-{
-	MAIN,
-	GAME,
-	BREAK
-};
 
 class	gui : public interface
 {
 public:
-	gui(irr::IrrlichtDevice *graphic, config *config);
+	gui(irr::IrrlichtDevice *graphic, config *config, project *project);
 	~gui();
 
-	void	run() override;
-	void	set_state(GuiState state);
-	game	*get_game() const;
+	void	run() override final;
+	void	play_game();
 private:
 	void	run_gui();
-	void	run_game();
 
 	void	main_menu();
-	void	break_menu();
-	void	game_menu();
 
 	irr::IrrlichtDevice	*_graphic;
 	irr::video::IVideoDriver	*_driver;
 	irr::gui::IGUIEnvironment	*_env;
 	std::unique_ptr<gui_handler>	_handler;
-	std::unique_ptr<game>		_game;
 	config			*_config;
-	GuiState		_state;
+	project			*_project;
 };
 #endif /* !GUI_HPP_ */

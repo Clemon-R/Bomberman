@@ -10,6 +10,7 @@
 
 	#include "irrlicht/irrlicht.h"
 	#include "project/config.hpp"
+class	gui;
 	#include "project/gui/gui.hpp"
 	#include "project/interface.hpp"
 	#include "saver.hpp"
@@ -27,6 +28,7 @@ public:
 
 	void	init_of_graphic();
 	void	run();
+	void	set_interface(interface *window);
 private:
 	std::unique_ptr<irr::IrrlichtDevice>	_graphic;
 	std::unique_ptr<config>	_config;

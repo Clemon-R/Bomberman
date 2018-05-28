@@ -11,7 +11,11 @@
 	#include "irrlicht/irrlicht.h"
 	#include "project/config.hpp"
 	#include "project/game/player.hpp"
+	#include "project/interface.hpp"
+class	project;
+	#include "project/project.hpp"
 class	game_handler;
+	#include "project/game/game_handler.hpp"
 	#include <iostream>
 	#include <list>
 	#include <tuple>
@@ -24,24 +28,28 @@ enum	GroundType
 	BRICK
 };
 
-class	game
+class	game : public interface
 {
 public:
-	game(irr::IrrlichtDevice *graphic, config *config);
+	game(irr::IrrlichtDevice *graphic, config *config, project *project);
 	~game();
 
 	player	*get_player();
 
-	void	run();
-	void	generateFloor();
-	void	spawnAll();
+	void	run() override final;
 	void	pause();
+	void	play();
 
 	bool	is_break() const;
+	void	back_to_main();
 private:
-	void	play();
+	void	generateFloor();
+
 	void	drawWall();
 	void	setCamera();
+
+	void	break_menu();
+	void	game_menu();
 
 	player	*_player;
 
@@ -50,7 +58,9 @@ private:
 	irr::gui::IGUIEnvironment	*_env;
 	irr::scene::ISceneManager	*_smgr;
 	std::list<std::tuple<GroundType, irr::video::ITexture *>>	_floor;
+	std::unique_ptr<game_handler>	_handler;
 	config			*_config;
 	bool			_break;
+	project	*_project;
 };
 #endif /* !GAME_HPP_ */
