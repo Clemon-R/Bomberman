@@ -143,6 +143,7 @@ bool	game::is_break() const
 
 void	game::back_to_main()
 {
+	_smgr->clear();
 	_graphic->setEventReceiver(nullptr);
 	_project->set_interface(new gui(_graphic, _config, _project));
 }
