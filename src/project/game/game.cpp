@@ -20,7 +20,7 @@ _break(false), _player(nullptr), _project(project), _handler(new game_handler(gr
     	_smgr = _graphic->getSceneManager();
 	if (!_driver || !_env || !_smgr)
 		throw exception("Impossible to find the driver");
-	generateFloor();
+	generate_floor();
 	_player = new player(_graphic, _config);
 	_player->refresh();
 	game_menu();
@@ -34,6 +34,31 @@ game::~game()
 	std::cout << "game: destroyed\n";
 }
 
+void	game::break_menu()
+{
+	irr::video::ITexture	*bg = database::load_img("break", ".png");
+	irr::video::ITexture	*img = database::load_img("btn_leave", ".png");
+	irr::video::ITexture	*img1 = database::load_img("btn_continue", ".png");
+
+
+	if (!img || !bg || !img1)
+		throw exception("Impossible to load image");
+	_env->clear();
+	_env->addImage(bg, irr::core::position2d<irr::s32>(0, 0));
+	utils::add_button(_env, img, irr::core::position2di((_config->WINDOW_WIDTH - img->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 + img->getSize().Height / 2), CodeEventGame::LEAVE);
+	utils::add_button(_env, img1, irr::core::position2di((_config->WINDOW_WIDTH - img1->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 - img1->getSize().Height), CodeEventGame::CONTINU);
+}
+
+void	game::game_menu()
+{
+	irr::video::ITexture	*img = database::load_img("btn_break", ".png");
+
+	_env->clear();
+	if (!img)
+		throw exception("Impossible to load image");
+	utils::add_button(_env, img, irr::core::position2di(0, 0), CodeEventGame::BREAK);
+}
+
 void	game::run()
 {
 	if (_player && !_break)
@@ -42,13 +67,7 @@ void	game::run()
 	_env->drawAll();
 }
 
-void	game::play()
-{
-	game_menu();
-	_break = false;
-}
-
-void	game::generateFloor()
+void	game::generate_floor()
 {
 	irr::video::ITexture	*ground = database::load_img("ground");
 	irr::video::ITexture	*wall = database::load_img("wall", ".png");
@@ -66,11 +85,11 @@ void	game::generateFloor()
 		else
 			_floor.push_back(std::make_tuple(GroundType::GROUND, ground));
 	}
-	drawWall();
-	setCamera();
+	draw_wall();
+	set_camera();
 }
 
-void	game::setCamera()
+void	game::set_camera()
 {
 	irr::scene::ICameraSceneNode	*cam = _smgr->addCameraSceneNode();
 	std::size_t			mid = _config->GAME_AREA / 2;
@@ -79,7 +98,7 @@ void	game::setCamera()
 	cam->setTarget(irr::core::vector3df(mid - _config->TILE_SIZE / 2, 0, mid));
 }
 
-void	game::drawWall()
+void	game::draw_wall()
 {
 	std::list<std::tuple<GroundType, irr::video::ITexture *>>::iterator	it = _floor.begin();
 	irr::scene::IMeshSceneNode *current = nullptr;
@@ -106,6 +125,12 @@ void	game::pause()
 	_break = true;
 }
 
+void	game::play()
+{
+	game_menu();
+	_break = false;
+}
+
 player	*game::get_player()
 {
 	return (_player);
@@ -114,31 +139,6 @@ player	*game::get_player()
 bool	game::is_break() const
 {
 	return (_break);
-}
-
-void	game::break_menu()
-{
-	irr::video::ITexture	*bg = database::load_img("break", ".png");
-	irr::video::ITexture	*img = database::load_img("btn_leave", ".png");
-	irr::video::ITexture	*img1 = database::load_img("btn_continue", ".png");
-
-
-	if (!img || !bg || !img1)
-		throw exception("Impossible to load image");
-	_env->clear();
-	_env->addImage(bg, irr::core::position2d<irr::s32>(0, 0));
-	utils::add_button(_env, img, irr::core::position2di((_config->WINDOW_WIDTH - img->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 + img->getSize().Height / 2), CodeEventGame::LEAVE);
-	utils::add_button(_env, img1, irr::core::position2di((_config->WINDOW_WIDTH - img1->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 - img1->getSize().Height), CodeEventGame::CONTINU);
-}
-
-void	game::game_menu()
-{
-	irr::video::ITexture	*img = database::load_img("btn_break", ".png");
-
-	_env->clear();
-	if (!img)
-		throw exception("Impossible to load image");
-	utils::add_button(_env, img, irr::core::position2di(0, 0), CodeEventGame::BREAK);
 }
 
 void	game::back_to_main()

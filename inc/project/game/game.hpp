@@ -43,21 +43,21 @@ public:
 	bool	is_break() const;
 	void	back_to_main();
 private:
-	void	generateFloor();
+	void	generate_floor();
+	void	draw_wall();
 
-	void	drawWall();
-	void	setCamera();
+	void	set_camera();
 
 	void	break_menu();
 	void	game_menu();
 
 	player	*_player;
+	std::list<std::tuple<GroundType, irr::video::ITexture *>>	_floor;
 
 	irr::IrrlichtDevice	*_graphic;
 	irr::video::IVideoDriver	*_driver;
 	irr::gui::IGUIEnvironment	*_env;
 	irr::scene::ISceneManager	*_smgr;
-	std::list<std::tuple<GroundType, irr::video::ITexture *>>	_floor;
 	std::unique_ptr<game_handler>	_handler;
 	config			*_config;
 	bool			_break;

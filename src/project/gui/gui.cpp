@@ -28,19 +28,6 @@ gui::~gui()
 	std::cout << "gui: destroyed\n";
 }
 
-void	gui::run_gui()
-{
-	irr::video::ITexture* images = database::load_img("bg");
-
-	if (images)
-		_driver->draw2DImage(
-			images,
-			irr::core::position2di(0, 0),
-			utils::get_center_img(images, irr::core::position2di(_config->WINDOW_WIDTH, _config->WINDOW_HEIGHT))
-		);
-	_env->drawAll();
-}
-
 void	gui::run()
 {
 	irr::video::ITexture* images = database::load_img("bg");

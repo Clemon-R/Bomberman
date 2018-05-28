@@ -29,8 +29,6 @@ public:
 	void	run() override final;
 	void	play_game();
 private:
-	void	run_gui();
-
 	void	main_menu();
 
 	irr::IrrlichtDevice	*_graphic;
