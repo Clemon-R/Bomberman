@@ -71,7 +71,9 @@ void	game::generate_floor()
 {
 	irr::video::ITexture	*ground = database::load_img("ground");
 	irr::video::ITexture	*wall = database::load_img("wall", ".png");
-	std::size_t	offset = 0;
+	std::size_t	y = 0;
+	std::size_t	x = 0;
+	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>	line;
 
 	if (!ground || !wall)
 		throw exception("Impossible to load image");
@@ -79,12 +81,19 @@ void	game::generate_floor()
 	_config->TILE_COUNT = _config->WINDOW_HEIGHT / _config->TILE_SIZE;
 	_config->GAME_AREA = _config->TILE_COUNT * _config->TILE_SIZE;
 	for (int i = 0;i < _config->TILE_COUNT * _config->TILE_COUNT;i += 1){
-		if (i % _config->TILE_COUNT == 0 || i / _config->TILE_COUNT == 0
-		|| i % _config->TILE_COUNT == _config->TILE_COUNT - 1 || i / _config->TILE_COUNT == _config->TILE_COUNT - 1)
-			_floor.push_back(std::make_tuple(GroundType::WALL, wall));
+		if (i / _config->TILE_COUNT != y){
+			_floor.push_back(line);
+			line.clear();
+			y = i / _config->TILE_COUNT;
+		}
+		x = i % _config->TILE_COUNT;
+		if (x == 0 || y == 0 || x == _config->TILE_COUNT - 1 || y == _config->TILE_COUNT - 1)
+			line.push_back(std::make_tuple(x, y, GroundType::WALL, wall));
 		else
-			_floor.push_back(std::make_tuple(GroundType::GROUND, ground));
+			line.push_back(std::make_tuple(x, y, GroundType::GROUND, ground));
 	}
+	if (line.size() > 0)
+		_floor.push_back(line);
 	generate_map();
 	draw_wall();
 	set_camera();
@@ -93,15 +102,19 @@ void	game::generate_floor()
 void 	game::generate_map()
 {
 	irr::video::ITexture	*brick = database::load_img("brick", ".png");
+	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>::iterator	y = _floor.begin();
+	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>::iterator	x;
 
 	if (!brick)
 		throw exception("Impossible to load image");
-	for (int x,y = 0; x*y != _config->TILE_COUNT; y++){
-		if ()
-			_floor.push_back(std::make_tuple(GroundType::BRICK, brick));
-		else
-			_floor.push_back(std::make_tuple(GroundType::BRICK, brick));
-		y == _configy++;
+	for (;y != _floor.end();y++){
+		x = y->begin();
+		for (;x != y->end();x++){
+			if (std::get<2>(*x) != GroundType::GROUND)
+				continue;
+			std::get<2>(*x) = GroundType::BRICK;
+			std::get<3>(*x) = brick;
+		}
 	}
 }
 
@@ -116,20 +129,23 @@ void	game::set_camera()
 
 void	game::draw_wall()
 {
-	std::list<std::tuple<GroundType, irr::video::ITexture *>>::iterator	it = _floor.begin();
+	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>::iterator	y = _floor.begin();
+	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>::iterator	x;
 	irr::scene::IMeshSceneNode *current = nullptr;
 
-	for (int i = 0;it != _floor.end() && i < _config->TILE_COUNT * _config->TILE_COUNT;i += 1){
-		current = _smgr->addCubeSceneNode(_config->TILE_SIZE);
-		if (!current)
-			continue;
-		current->setPosition(irr::core::vector3df(
-			(i / _config->TILE_COUNT) * _config->TILE_SIZE,
-			std::get<0>(*it) != GroundType::GROUND ? _config->TILE_SIZE : 0,
-			(i % _config->TILE_COUNT) * _config->TILE_SIZE
-		));
-		current->setMaterialTexture(0, std::get<1>(*it));
-		it++;
+	for (;y != _floor.end();y++){
+		x = y->begin();
+		for (;x != y->end();x++){
+			current = _smgr->addCubeSceneNode(_config->TILE_SIZE);
+			if (!current)
+				continue;
+			current->setPosition(irr::core::vector3df(
+				std::get<1>(*x) * _config->TILE_SIZE,
+				std::get<2>(*x) != GroundType::GROUND ? _config->TILE_SIZE : 0,
+				std::get<0>(*x) * _config->TILE_SIZE
+			));
+			current->setMaterialTexture(0, std::get<3>(*x));
+		}
 	}
 }
 
