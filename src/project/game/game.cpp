@@ -71,7 +71,8 @@ void	game::generate_floor()
 {
 	irr::video::ITexture	*ground = database::load_img("ground");
 	irr::video::ITexture	*wall = database::load_img("wall", ".png");
-	std::size_t	offset = 0;
+	std::size_t	y = 0;
+	std::list<std::tuple<GroundType, irr::video::ITexture *>>	line;
 
 	if (!ground || !wall)
 		throw exception("Impossible to load image");
@@ -79,12 +80,19 @@ void	game::generate_floor()
 	_config->TILE_COUNT = _config->WINDOW_HEIGHT / _config->TILE_SIZE;
 	_config->GAME_AREA = _config->TILE_COUNT * _config->TILE_SIZE;
 	for (int i = 0;i < _config->TILE_COUNT * _config->TILE_COUNT;i += 1){
+		if (i / _config->TILE_COUNT != y){
+			_floor.push_back(line);
+			line.clear();
+			y = i / _config->TILE_COUNT;
+		}
 		if (i % _config->TILE_COUNT == 0 || i / _config->TILE_COUNT == 0
 		|| i % _config->TILE_COUNT == _config->TILE_COUNT - 1 || i / _config->TILE_COUNT == _config->TILE_COUNT - 1)
-			_floor.push_back(std::make_tuple(GroundType::WALL, wall));
+			line.push_back(std::make_tuple(GroundType::WALL, wall));
 		else
-			_floor.push_back(std::make_tuple(GroundType::GROUND, ground));
+			line.push_back(std::make_tuple(GroundType::GROUND, ground));
 	}
+	if (line.size() > 0)
+		_floor.push_back(line);
 	draw_wall();
 	set_camera();
 }
@@ -100,20 +108,23 @@ void	game::set_camera()
 
 void	game::draw_wall()
 {
-	std::list<std::tuple<GroundType, irr::video::ITexture *>>::iterator	it = _floor.begin();
+	std::list<std::list<std::tuple<GroundType, irr::video::ITexture *>>>::iterator	y = _floor.begin();
+	std::list<std::tuple<GroundType, irr::video::ITexture *>>::iterator	x;
 	irr::scene::IMeshSceneNode *current = nullptr;
 
-	for (int i = 0;it != _floor.end() && i < _config->TILE_COUNT * _config->TILE_COUNT;i += 1){
-		current = _smgr->addCubeSceneNode(_config->TILE_SIZE);
-		if (!current)
-			continue;
-		current->setPosition(irr::core::vector3df(
-			(i / _config->TILE_COUNT) * _config->TILE_SIZE,
-			std::get<0>(*it) != GroundType::GROUND ? _config->TILE_SIZE : 0,
-			(i % _config->TILE_COUNT) * _config->TILE_SIZE
-		));
-		current->setMaterialTexture(0, std::get<1>(*it));
-		it++;
+	for (int pos_y = 0;y != _floor.end();pos_y++, y++){
+		x = y->begin();
+		for (int pos_x = 0;x != y->end();pos_x++, x++){
+			current = _smgr->addCubeSceneNode(_config->TILE_SIZE);
+			if (!current)
+				continue;
+			current->setPosition(irr::core::vector3df(
+				pos_y * _config->TILE_SIZE,
+				std::get<0>(*x) != GroundType::GROUND ? _config->TILE_SIZE : 0,
+				pos_x * _config->TILE_SIZE
+			));
+			current->setMaterialTexture(0, std::get<1>(*x));
+		}
 	}
 }
 
