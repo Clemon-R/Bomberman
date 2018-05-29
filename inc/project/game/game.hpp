@@ -41,6 +41,11 @@ public:
 	void	play();
 
 	bool	is_break() const;
+
+	void	game_menu();
+	void	break_menu();
+	void	save_menu();
+
 	void	back_to_main();
 private:
 	void	generate_floor();
@@ -48,9 +53,6 @@ private:
 	void	generate_map();
 
 	void	set_camera();
-
-	void	break_menu();
-	void	game_menu();
 
 	player	*_player;
 	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>	_floor;

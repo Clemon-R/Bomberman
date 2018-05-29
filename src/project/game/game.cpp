@@ -48,8 +48,25 @@ void	game::break_menu()
 	_env->clear();
 	_env->addImage(bg, irr::core::position2d<irr::s32>(0, 0));
 	utils::add_button(_env, img1, irr::core::position2di((_config->WINDOW_WIDTH - img1->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 - img1->getSize().Height), CodeEventGame::CONTINU);
-	utils::add_button(_env, img2, irr::core::position2di((_config->WINDOW_WIDTH - img2->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 - img2->getSize().Height / 2), CodeEventGame::SAVE);
+	utils::add_button(_env, img2, irr::core::position2di((_config->WINDOW_WIDTH - img2->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 + img2->getSize().Height / 2), CodeEventGame::SAVE);
 	utils::add_button(_env, img, irr::core::position2di((_config->WINDOW_WIDTH - img->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 + img->getSize().Height * 2), CodeEventGame::LEAVE);
+}
+
+void	game::save_menu()
+{
+	irr::video::ITexture	*bg = database::load_img("break", ".png");
+	irr::video::ITexture	*img = database::load_img("btn_save", ".png");
+	irr::video::ITexture	*img1 = database::load_img("btn_back", ".png");
+	std::size_t	x = 0;
+
+	if (!bg || !img || !img1)
+		throw exception("Impossible to load image");
+	x = (_config->WINDOW_WIDTH - img1->getSize().Width) / 2;
+	_env->clear();
+	_env->addImage(bg, irr::core::position2d<irr::s32>(0, 0));
+	_env->addEditBox(L"", irr::core::recti(x, _config->WINDOW_HEIGHT / 2 - img1->getSize().Height, x + img->getSize().Width, _config->WINDOW_HEIGHT / 2));
+	utils::add_button(_env, img, irr::core::position2di(x, _config->WINDOW_HEIGHT / 2 + img->getSize().Height / 2), CodeEventGame::SAVEGAME);
+	utils::add_button(_env, img1, irr::core::position2di(x, _config->WINDOW_HEIGHT / 2 + img1->getSize().Height * 2), CodeEventGame::BACKGAME);
 }
 
 void	game::game_menu()

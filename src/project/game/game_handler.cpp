@@ -42,6 +42,17 @@ bool	game_handler::window_handler(const irr::SEvent& event)
 		case CodeEventGame::LEAVE:
 			_game.back_to_main();
 			break;
+		
+		case CodeEventGame::SAVE:
+			_game.save_menu();
+			break;
+		
+		case CodeEventGame::BACKGAME:
+			_game.break_menu();
+			break;
+
+		case CodeEventGame::SAVEGAME:
+			break;
 
 		default:
 		return (false);

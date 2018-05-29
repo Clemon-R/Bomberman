@@ -18,6 +18,8 @@ enum	CodeEventGame
 	LEAVE = 101,
 	CONTINU,
 	SAVE,
+	BACKGAME,
+	SAVEGAME,
 	BREAK
 };
 
