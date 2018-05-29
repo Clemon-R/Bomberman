@@ -31,6 +31,7 @@ _break(false), _player(nullptr), _project(project), _handler(new game_handler(gr
 game::~game()
 {
 	std::cout << "game: destroying\n";
+	_handler.reset(nullptr);
 	std::cout << "game: destroyed\n";
 }
 
@@ -40,7 +41,7 @@ void	game::break_menu()
 	irr::video::ITexture	*img = database::load_img("btn_leave", ".png");
 	irr::video::ITexture	*img1 = database::load_img("btn_continue", ".png");
 
-
+	printf("game: break menu\n");
 	if (!img || !bg || !img1)
 		throw exception("Impossible to load image");
 	_env->clear();
@@ -53,9 +54,10 @@ void	game::game_menu()
 {
 	irr::video::ITexture	*img = database::load_img("btn_break", ".png");
 
-	_env->clear();
+	printf("game: game menu\n");
 	if (!img)
 		throw exception("Impossible to load image");
+	_env->clear();
 	utils::add_button(_env, img, irr::core::position2di(0, 0), CodeEventGame::BREAK);
 }
 
@@ -75,6 +77,7 @@ void	game::generate_floor()
 	std::size_t	x = 0;
 	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>	line;
 
+	printf("game: generating map...\n");
 	if (!ground || !wall)
 		throw exception("Impossible to load image");
 	_config->TILE_SIZE = ground->getSize().Height;
@@ -96,6 +99,7 @@ void	game::generate_floor()
 		_floor.push_back(line);
 	draw_wall();
 	set_camera();
+	printf("game: map generated\n");
 }
 
 void	game::set_camera()
@@ -103,19 +107,22 @@ void	game::set_camera()
 	irr::scene::ICameraSceneNode	*cam = _smgr->addCameraSceneNode();
 	std::size_t			mid = _config->GAME_AREA / 2;
 
+	printf("game: adding the camera...\n");
 	cam->setPosition(irr::core::vector3df(mid - _config->TILE_SIZE / 2, _config->GAME_AREA * 0.74, mid));
 	cam->setTarget(irr::core::vector3df(mid - _config->TILE_SIZE / 2, 0, mid));
+	printf("game: camera added\n");
 }
 
 void	game::draw_wall()
 {
-	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>::iterator	y = _floor.begin();
-	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>::iterator	x;
+	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>::reverse_iterator	y = _floor.rbegin();
+	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>::reverse_iterator	x;
 	irr::scene::IMeshSceneNode *current = nullptr;
 
-	for (;y != _floor.end();y++){
-		x = y->begin();
-		for (;x != y->end();x++){
+	printf("game: spawning map...\n");
+	for (;y != _floor.rend();y++){
+		x = y->rbegin();
+		for (;x != y->rend();x++){
 			current = _smgr->addCubeSceneNode(_config->TILE_SIZE);
 			if (!current)
 				continue;
@@ -127,10 +134,12 @@ void	game::draw_wall()
 			current->setMaterialTexture(0, std::get<3>(*x));
 		}
 	}
+	printf("game: map spawned\n");
 }
 
 void	game::pause()
 {
+	printf("game: pause\n");
 	if (_player)
 		_player->pause();
 	break_menu();
@@ -139,6 +148,7 @@ void	game::pause()
 
 void	game::play()
 {
+	printf("game: continue\n");
 	game_menu();
 	_break = false;
 }
@@ -155,6 +165,7 @@ bool	game::is_break() const
 
 void	game::back_to_main()
 {
+	printf("game: back to the main\n");
 	_smgr->clear();
 	_graphic->setEventReceiver(nullptr);
 	_project->set_interface(new gui(_graphic, _config, _project));
