@@ -16,7 +16,10 @@ class	gui;
 enum	CodeEventGui
 {
 	EXIT = 101,
-	PLAY
+	PLAY,
+	LOAD,
+	CHARGE,
+	BACK
 };
 
 class	gui_handler : public irr::IEventReceiver

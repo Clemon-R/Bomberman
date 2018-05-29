@@ -17,6 +17,7 @@ enum	CodeEventGame
 {
 	LEAVE = 101,
 	CONTINU,
+	SAVE,
 	BREAK
 };
 

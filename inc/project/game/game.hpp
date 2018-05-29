@@ -45,6 +45,7 @@ public:
 private:
 	void	generate_floor();
 	void	draw_wall();
+	void	generate_map();
 
 	void	set_camera();
 

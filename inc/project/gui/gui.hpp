@@ -28,9 +28,10 @@ public:
 
 	void	run() override final;
 	void	play_game();
-private:
+	
 	void	main_menu();
-
+	void	load_menu();
+private:
 	irr::IrrlichtDevice	*_graphic;
 	irr::video::IVideoDriver	*_driver;
 	irr::gui::IGUIEnvironment	*_env;

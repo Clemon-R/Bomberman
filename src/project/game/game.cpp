@@ -40,14 +40,16 @@ void	game::break_menu()
 	irr::video::ITexture	*bg = database::load_img("break", ".png");
 	irr::video::ITexture	*img = database::load_img("btn_leave", ".png");
 	irr::video::ITexture	*img1 = database::load_img("btn_continue", ".png");
+	irr::video::ITexture	*img2 = database::load_img("btn_save", ".png");
 
 	printf("game: break menu\n");
-	if (!img || !bg || !img1)
+	if (!img || !bg || !img1 || !img2)
 		throw exception("Impossible to load image");
 	_env->clear();
 	_env->addImage(bg, irr::core::position2d<irr::s32>(0, 0));
-	utils::add_button(_env, img, irr::core::position2di((_config->WINDOW_WIDTH - img->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 + img->getSize().Height / 2), CodeEventGame::LEAVE);
 	utils::add_button(_env, img1, irr::core::position2di((_config->WINDOW_WIDTH - img1->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 - img1->getSize().Height), CodeEventGame::CONTINU);
+	utils::add_button(_env, img2, irr::core::position2di((_config->WINDOW_WIDTH - img2->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 - img2->getSize().Height / 2), CodeEventGame::SAVE);
+	utils::add_button(_env, img, irr::core::position2di((_config->WINDOW_WIDTH - img->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 + img->getSize().Height * 2), CodeEventGame::LEAVE);
 }
 
 void	game::game_menu()
@@ -105,7 +107,7 @@ void	game::generate_floor()
 
 void 	game::generate_map()
 {
-	irr::video::ITexture	*brick = database::load_img("brick", ".png");
+	irr::video::ITexture	*brick = database::load_img("bric", ".png");
 	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>::iterator	y = _floor.begin();
 	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>::iterator	x;
 
@@ -135,14 +137,14 @@ void	game::set_camera()
 
 void	game::draw_wall()
 {
-	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>::reverse_iterator	y = _floor.rbegin();
-	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>::reverse_iterator	x;
+	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>::iterator	y = _floor.begin();
+	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>::iterator	x;
 	irr::scene::IMeshSceneNode *current = nullptr;
 
 	printf("game: spawning map...\n");
-	for (;y != _floor.rend();y++){
-		x = y->rbegin();
-		for (;x != y->rend();x++){
+	for (;y != _floor.end();y++){
+		x = y->begin();
+		for (;x != y->end();x++){
 			current = _smgr->addCubeSceneNode(_config->TILE_SIZE);
 			if (!current)
 				continue;
