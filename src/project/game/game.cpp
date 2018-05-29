@@ -97,9 +97,29 @@ void	game::generate_floor()
 	}
 	if (line.size() > 0)
 		_floor.push_back(line);
+	generate_map();
 	draw_wall();
 	set_camera();
 	printf("game: map generated\n");
+}
+
+void 	game::generate_map()
+{
+	irr::video::ITexture	*brick = database::load_img("brick", ".png");
+	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>::iterator	y = _floor.begin();
+	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>::iterator	x;
+
+	if (!brick)
+		throw exception("Impossible to load image");
+	for (;y != _floor.end();y++){
+		x = y->begin();
+		for (;x != y->end();x++){
+			if (std::get<2>(*x) != GroundType::GROUND)
+				continue;
+			std::get<2>(*x) = GroundType::BRICK;
+			std::get<3>(*x) = brick;
+		}
+	}
 }
 
 void	game::set_camera()
