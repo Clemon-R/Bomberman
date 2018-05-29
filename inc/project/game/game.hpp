@@ -52,7 +52,7 @@ private:
 	void	game_menu();
 
 	player	*_player;
-	std::list<std::list<std::tuple<GroundType, irr::video::ITexture *>>>	_floor;
+	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>	_floor;
 
 	irr::IrrlichtDevice	*_graphic;
 	irr::video::IVideoDriver	*_driver;

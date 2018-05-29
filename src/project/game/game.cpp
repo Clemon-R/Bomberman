@@ -72,7 +72,8 @@ void	game::generate_floor()
 	irr::video::ITexture	*ground = database::load_img("ground");
 	irr::video::ITexture	*wall = database::load_img("wall", ".png");
 	std::size_t	y = 0;
-	std::list<std::tuple<GroundType, irr::video::ITexture *>>	line;
+	std::size_t	x = 0;
+	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>	line;
 
 	if (!ground || !wall)
 		throw exception("Impossible to load image");
@@ -85,11 +86,11 @@ void	game::generate_floor()
 			line.clear();
 			y = i / _config->TILE_COUNT;
 		}
-		if (i % _config->TILE_COUNT == 0 || i / _config->TILE_COUNT == 0
-		|| i % _config->TILE_COUNT == _config->TILE_COUNT - 1 || i / _config->TILE_COUNT == _config->TILE_COUNT - 1)
-			line.push_back(std::make_tuple(GroundType::WALL, wall));
+		x = i % _config->TILE_COUNT;
+		if (x == 0 || y == 0 || x == _config->TILE_COUNT - 1 || y == _config->TILE_COUNT - 1)
+			line.push_back(std::make_tuple(x, y, GroundType::WALL, wall));
 		else
-			line.push_back(std::make_tuple(GroundType::GROUND, ground));
+			line.push_back(std::make_tuple(x, y, GroundType::GROUND, ground));
 	}
 	if (line.size() > 0)
 		_floor.push_back(line);
@@ -108,22 +109,22 @@ void	game::set_camera()
 
 void	game::draw_wall()
 {
-	std::list<std::list<std::tuple<GroundType, irr::video::ITexture *>>>::iterator	y = _floor.begin();
-	std::list<std::tuple<GroundType, irr::video::ITexture *>>::iterator	x;
+	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>::iterator	y = _floor.begin();
+	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>::iterator	x;
 	irr::scene::IMeshSceneNode *current = nullptr;
 
-	for (int pos_y = 0;y != _floor.end();pos_y++, y++){
+	for (;y != _floor.end();y++){
 		x = y->begin();
-		for (int pos_x = 0;x != y->end();pos_x++, x++){
+		for (;x != y->end();x++){
 			current = _smgr->addCubeSceneNode(_config->TILE_SIZE);
 			if (!current)
 				continue;
 			current->setPosition(irr::core::vector3df(
-				pos_y * _config->TILE_SIZE,
-				std::get<0>(*x) != GroundType::GROUND ? _config->TILE_SIZE : 0,
-				pos_x * _config->TILE_SIZE
+				std::get<1>(*x) * _config->TILE_SIZE,
+				std::get<2>(*x) != GroundType::GROUND ? _config->TILE_SIZE : 0,
+				std::get<0>(*x) * _config->TILE_SIZE
 			));
-			current->setMaterialTexture(0, std::get<1>(*x));
+			current->setMaterialTexture(0, std::get<3>(*x));
 		}
 	}
 }
