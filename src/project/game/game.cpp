@@ -85,8 +85,24 @@ void	game::generate_floor()
 		else
 			_floor.push_back(std::make_tuple(GroundType::GROUND, ground));
 	}
+	generate_map();
 	draw_wall();
 	set_camera();
+}
+
+void 	game::generate_map()
+{
+	irr::video::ITexture	*brick = database::load_img("brick", ".png");
+
+	if (!brick)
+		throw exception("Impossible to load image");
+	for (int x,y = 0; x*y != _config->TILE_COUNT; y++){
+		if ()
+			_floor.push_back(std::make_tuple(GroundType::BRICK, brick));
+		else
+			_floor.push_back(std::make_tuple(GroundType::BRICK, brick));
+		y == _configy++;
+	}
 }
 
 void	game::set_camera()
