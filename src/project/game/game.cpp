@@ -10,6 +10,8 @@
 #include "project/database.hpp"
 #include "exception.hpp"
 #include "project/gui/gui.hpp"
+#include <cstdlib>
+#include <fstream>
 
 game::game(irr::IrrlichtDevice *graphic, config *config, project *project) : _graphic(graphic), _config(config),
 _break(false), _player(nullptr), _project(project), _handler(new game_handler(graphic, *this))
@@ -64,7 +66,7 @@ void	game::save_menu()
 	x = (_config->WINDOW_WIDTH - img1->getSize().Width) / 2;
 	_env->clear();
 	_env->addImage(bg, irr::core::position2d<irr::s32>(0, 0));
-	_env->addEditBox(L"", irr::core::recti(x, _config->WINDOW_HEIGHT / 2 - img1->getSize().Height, x + img->getSize().Width, _config->WINDOW_HEIGHT / 2));
+	_text = _env->addEditBox(L"", irr::core::recti(x, _config->WINDOW_HEIGHT / 2 - img1->getSize().Height, x + img->getSize().Width, _config->WINDOW_HEIGHT / 2));
 	utils::add_button(_env, img, irr::core::position2di(x, _config->WINDOW_HEIGHT / 2 + img->getSize().Height / 2), CodeEventGame::SAVEGAME);
 	utils::add_button(_env, img1, irr::core::position2di(x, _config->WINDOW_HEIGHT / 2 + img1->getSize().Height * 2), CodeEventGame::BACKGAME);
 }
@@ -116,7 +118,7 @@ void	game::generate_floor()
 	}
 	if (line.size() > 0)
 		_floor.push_back(line);
-	generate_map();
+	//generate_map();
 	draw_wall();
 	set_camera();
 	printf("game: map generated\n");
@@ -208,4 +210,56 @@ void	game::back_to_main()
 	_smgr->clear();
 	_graphic->setEventReceiver(nullptr);
 	_project->set_interface(new gui(_graphic, _config, _project));
+}
+
+const std::string	game::get_text()
+{
+	std::string	result;
+
+	for (int i = 0;_text && _text->getText() && _text->getText()[i];i++){
+		result += _text->getText()[i];
+	}
+	return (result);
+}
+
+void	game::save_game(const std::string &filename)
+{
+	std::ofstream	file;
+
+	std::cout << "game: saving...\n";
+	std::cout << "game: removing old save if exist...\n";
+	remove(filename.c_str());
+	file.open(filename);
+	if (!file.is_open())
+		throw exception("Impossible to write the save");
+	if (_player)
+		_player->save_player(file);
+	file.close();
+	std::cout << "game: saved\n";
+}
+
+void	game::load_game(const std::string &filename)
+{
+	std::ifstream	file;
+	std::string	line;
+	std::size_t	pos;
+	std::string	param;
+	std::string	arg;
+
+	std::cout << "game: loading...\n";
+	file.open(filename);
+	if (!file.is_open())
+		throw exception("Impossible to load the save");
+	while (std::getline(file, line)){
+		pos = line.find('=');
+		if (pos == std::string::npos)
+			continue;
+		param = line.substr(0, pos);
+		arg = line.substr(pos + 1);
+		if (_player)
+			_player->load_player(param, arg);
+		arg.clear();
+	}
+	file.close();
+	std::cout << "game: loaded\n";
 }

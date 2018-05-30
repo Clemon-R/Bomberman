@@ -25,6 +25,9 @@ public:
 
 	irr::core::position2di	get_position() const;
 	irr::core::position2di	get_real_position() const;
+
+	void	save_player(std::ofstream &file);
+	void	load_player(const std::string &param, const std::string &arg);
 private:
 	void	play();
 	irr::core::position2di	convert_pos(const irr::core::vector3df &pos) const;

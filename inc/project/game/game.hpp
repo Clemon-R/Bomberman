@@ -47,6 +47,11 @@ public:
 	void	save_menu();
 
 	void	back_to_main();
+
+	const std::string	get_text();
+
+	void	save_game(const std::string &filename);
+	void	load_game(const std::string &filename);
 private:
 	void	generate_floor();
 	void	draw_wall();
@@ -65,5 +70,6 @@ private:
 	config			*_config;
 	bool			_break;
 	project	*_project;
+	irr::gui::IGUIEditBox	*_text;
 };
 #endif /* !GAME_HPP_ */

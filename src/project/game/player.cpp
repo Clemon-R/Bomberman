@@ -8,6 +8,7 @@
 #include "project/game/player.hpp"
 #include "exception.hpp"
 #include "project/database.hpp"
+#include <fstream>
 
 player::player(irr::IrrlichtDevice *graphic, config *config) : _graphic(graphic), _config(config),
 _anim(irr::scene::EMAT_STAND), _rotate(0, 0, 0), _break(false)
@@ -110,4 +111,18 @@ irr::core::position2di	player::get_real_position() const
 {
 	return (irr::core::position2di(_design->getPosition().Z,
 		_design->getPosition().X));
+}
+
+void	player::save_player(std::ofstream &file)
+{
+	irr::core::position2di	pos = get_position();
+
+	std::cout << "player: saving...\n";
+	file << "P_POS=";
+	file << pos.X << "," << pos.Y << std::endl;
+	std::cout << "player: saved\n";
+}
+
+void	player::load_player(const std::string &param, const std::string &arg)
+{
 }
