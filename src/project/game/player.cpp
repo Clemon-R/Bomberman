@@ -14,12 +14,21 @@ player::player(irr::IrrlichtDevice *graphic, config *config) : _graphic(graphic)
 _anim(irr::scene::EMAT_STAND), _rotate(0, 0, 0), _break(false)
 {
 	std::size_t	mid = _config->GAME_AREA / 2;
-	irr::scene::IAnimatedMesh	*mesh = nullptr;
 
+	std::cout << "player: init...\n";
 	_driver = _graphic->getVideoDriver();
     	_smgr = _graphic->getSceneManager();
 	if (!_driver || !_smgr)
 		throw exception("Impossible to find the driver");
+	_target = irr::core::vector3df(mid, _config->TILE_SIZE, mid);
+	create_player();
+	std::cout << "player: initiated\n";
+}
+
+void	player::create_player()
+{
+	irr::scene::IAnimatedMesh	*mesh = nullptr;
+
 	mesh = _smgr->getMesh("ressources/skin/sydney.md2");
 	if (!mesh)
 		throw exception("Impossible to load mesh");
@@ -30,8 +39,7 @@ _anim(irr::scene::EMAT_STAND), _rotate(0, 0, 0), _break(false)
 	_design->setMaterialFlag(irr::video::EMF_LIGHTING, false);
 	_design->setMD2Animation(_anim);
 	_design->setRotation(_rotate);
-	_target = irr::core::vector3df(mid, _config->TILE_SIZE, mid);
-	_design->setPosition(_target);	
+	_design->setPosition(_target);
 }
 
 void	player::refresh()
@@ -40,10 +48,11 @@ void	player::refresh()
 		play();
 		_break = false;
 	}
-	if (_design->getPosition().X == _target.X && _design->getPosition().Z == _target.Z){
+	if (_anim == irr::scene::EMAT_RUN && _design->getPosition().X == _target.X && _design->getPosition().Z == _target.Z){
 		_anim = irr::scene::EMAT_STAND;
 		_design->setMD2Animation(_anim);
 		_design->setRotation(_rotate);
+		std::cout << "player: arrived\n";
 	}
 }
 
@@ -54,6 +63,7 @@ void	player::move_to(const irr::core::position2di &pos)
 	irr::core::position2di	player = get_position();
 	irr::scene::ISceneNodeAnimator	*anim = nullptr;
 
+	std::cout << "player: moving...\n";
 	if ((pos.X == old.X && pos.Y == old.Y) ||
 		(player.X == pos.X && player.Y == pos.Y))
 		return;
@@ -73,6 +83,7 @@ void	player::move_to(const irr::core::position2di &pos)
 		_anim = irr::scene::EMAT_RUN;
 		_design->setMD2Animation(_anim);
 		_design->setRotation(_rotate);
+		std::cout << "player: start running...\n";
 	}
 }
 
@@ -127,11 +138,13 @@ void	player::load_player(const std::string &param, const std::string &arg)
 {
 	std::size_t	pos;
 
+	std::cout << "player: new param\n";
 	if (param.at(0) != 'P' || param.at(2) != '_')
 		return;
 	if (param.substr(3).compare("POS") == 0){
 		if ((pos = arg.find(',')) == std::string::npos)
 			return;
 		_design->setPosition(irr::core::vector3df(std::atoi(arg.substr(pos + 1).c_str()) * _config->TILE_SIZE, _config->TILE_SIZE, std::atoi(arg.substr(0, pos).c_str()) * _config->TILE_SIZE));
+		_target = _design->getPosition();
 	}
 }

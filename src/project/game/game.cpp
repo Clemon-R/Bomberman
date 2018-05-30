@@ -12,6 +12,8 @@
 #include "project/gui/gui.hpp"
 #include <cstdlib>
 #include <fstream>
+#include <sstream>
+#include <string>
 
 game::game(irr::IrrlichtDevice *graphic, config *config, project *project) : _graphic(graphic), _config(config),
 _break(false), _player(nullptr), _project(project), _handler(new game_handler(graphic, *this))
@@ -86,7 +88,7 @@ void	game::run()
 {
 	if (_player && !_break)
 		_player->refresh();
-	_graphic->getSceneManager()->drawAll();
+	_smgr->drawAll();
 	_env->drawAll();
 }
 
@@ -222,6 +224,68 @@ const std::string	game::get_text()
 	return (result);
 }
 
+void	game::save_map(std::ofstream &file)
+{
+	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>::iterator	y = _floor.begin();
+	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>::iterator	x;
+	bool	first = true;
+
+	std::cout << "game: saving map...\n";
+	file << "MAP=";
+	for (;y != _floor.end();y++){
+		for (x = y->begin();x != y->end();x++, first = false){
+			if (!first)
+				file << ",";
+			file << std::get<2>(*x);
+		}
+	}
+	file << std::endl;
+	std::cout << "game: map saved\n";
+}
+
+void	game::load_map(const std::string &map)
+{
+	std::stringstream	ss;
+	std::string		val;
+	int			value = -1;
+	irr::video::ITexture	*ground = database::load_img("ground");
+	irr::video::ITexture	*wall = database::load_img("wall", ".png");
+	irr::video::ITexture	*bric = database::load_img("bric", ".png");
+	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>::iterator	y = _floor.begin();
+	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>::iterator	x = y->begin();
+
+	std::cout << "game: loading map...\n";
+	if (!ground || !wall || !bric)
+		throw exception("Impossible to load image");
+	ss.str(map);
+	while (std::getline(ss, val, ',')){
+		value = std::atoi(val.c_str());
+		std::cout << "game: type - " << val << std::endl;
+		if (value == GroundType::WALL){
+			std::get<2>(*x) = GroundType::WALL;
+			std::get<3>(*x) = wall;
+		} else if (value == GroundType::GROUND){
+			std::get<2>(*x) = GroundType::GROUND;
+			std::get<3>(*x) = ground;
+		} else if (value == GroundType::BRICK){
+			std::get<2>(*x) = GroundType::BRICK;
+			std::get<3>(*x) = bric;
+		}
+		x++;
+		if (x == y->end()){
+			y++;
+			if (y == _floor.end())
+				break;
+			x = y->begin();
+		}
+
+	}
+	draw_wall();
+	if (_player)
+		_player->create_player();
+	std::cout << "game: map loaded\n";
+}
+
 void	game::save_game(const std::string &filename)
 {
 	std::ofstream	file;
@@ -232,10 +296,17 @@ void	game::save_game(const std::string &filename)
 	file.open(filename);
 	if (!file.is_open())
 		throw exception("Impossible to write the save");
+	save_map(file);
 	if (_player)
 		_player->save_player(file);
 	file.close();
 	std::cout << "game: saved\n";
+}
+
+void	game::dispatch_load(const std::string &param, const std::string &arg)
+{
+	if (param.compare("MAP") == 0)
+		load_map(arg);
 }
 
 void	game::load_game(const std::string &filename)
@@ -250,16 +321,23 @@ void	game::load_game(const std::string &filename)
 	file.open(filename);
 	if (!file.is_open())
 		throw exception("Impossible to load the save");
+	_smgr->clear();
 	while (std::getline(file, line)){
-		pos = line.find('=');
-		if (pos == std::string::npos)
-			continue;
-		param = line.substr(0, pos);
-		arg = line.substr(pos + 1);
-		if (_player)
-			_player->load_player(param, arg);
-		arg.clear();
+		try{
+			pos = line.find('=');
+			if (pos == std::string::npos)
+				continue;
+			param = line.substr(0, pos);
+			arg = line.substr(pos + 1);
+			dispatch_load(param, arg);
+			if (_player)
+				_player->load_player(param, arg);
+			arg.clear();
+		}catch (const std::exception &error){
+			std::cerr << "game: " << error.what() << std::endl;
+		}
 	}
 	file.close();
+	set_camera();
 	std::cout << "game: loaded\n";
 }

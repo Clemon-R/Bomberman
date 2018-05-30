@@ -52,12 +52,17 @@ public:
 
 	void	save_game(const std::string &filename);
 	void	load_game(const std::string &filename);
+
+	void	set_camera();
 private:
 	void	generate_floor();
 	void	draw_wall();
 	void	generate_map();
 
-	void	set_camera();
+	void	dispatch_load(const std::string &param, const std::string &arg);
+
+	void	save_map(std::ofstream	&file);
+	void	load_map(const std::string &map);
 
 	player	*_player;
 	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>	_floor;

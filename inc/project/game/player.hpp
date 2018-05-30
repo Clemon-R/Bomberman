@@ -28,6 +28,8 @@ public:
 
 	void	save_player(std::ofstream &file);
 	void	load_player(const std::string &param, const std::string &arg);
+
+	void	create_player();
 private:
 	void	play();
 	irr::core::position2di	convert_pos(const irr::core::vector3df &pos) const;
