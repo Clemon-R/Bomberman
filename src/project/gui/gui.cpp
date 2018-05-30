@@ -67,7 +67,7 @@ void	gui::load_menu()
 	x = (_config->WINDOW_WIDTH - img1->getSize().Width) / 2;
 	_env->clear();
 	_graphic->setEventReceiver(_handler.get());
-	_env->addEditBox(L"", irr::core::recti(x, _config->WINDOW_HEIGHT / 2 - img1->getSize().Height, x + img->getSize().Width, _config->WINDOW_HEIGHT / 2));
+	_text = _env->addEditBox(L"", irr::core::recti(x, _config->WINDOW_HEIGHT / 2 - img1->getSize().Height, x + img->getSize().Width, _config->WINDOW_HEIGHT / 2));
 	utils::add_button(_env, img, irr::core::position2di(x, _config->WINDOW_HEIGHT / 2 + img->getSize().Height / 2), CodeEventGui::CHARGE);
 	utils::add_button(_env, img1, irr::core::position2di(x, _config->WINDOW_HEIGHT / 2 + img1->getSize().Height * 2), CodeEventGui::BACK);
 }
@@ -76,4 +76,26 @@ void	gui::play_game()
 {
 	_graphic->setEventReceiver(nullptr);
 	_project->set_interface(new game(_graphic, _config, _project));
+}
+
+void	gui::load_game(const std::string &filename)
+{
+	game	*current = nullptr;
+
+	_graphic->setEventReceiver(nullptr);
+	current = new game(_graphic, _config, _project);
+	if (!current)
+		return;
+	current->load_game(filename);
+	_project->set_interface(current);
+}
+
+const std::string	gui::get_text()
+{
+	std::string	result;
+
+	for (int i = 0;_text && _text->getText() && _text->getText()[i];i++){
+		result += _text->getText()[i];
+	}
+	return (result);
 }

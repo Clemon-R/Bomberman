@@ -31,6 +31,10 @@ public:
 	
 	void	main_menu();
 	void	load_menu();
+
+	void	load_game(const std::string &filename);
+
+	const std::string	get_text();
 private:
 	irr::IrrlichtDevice	*_graphic;
 	irr::video::IVideoDriver	*_driver;
@@ -38,5 +42,6 @@ private:
 	std::unique_ptr<gui_handler>	_handler;
 	config			*_config;
 	project			*_project;
+	irr::gui::IGUIEditBox	*_text;
 };
 #endif /* !GUI_HPP_ */

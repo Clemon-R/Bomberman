@@ -118,11 +118,20 @@ void	player::save_player(std::ofstream &file)
 	irr::core::position2di	pos = get_position();
 
 	std::cout << "player: saving...\n";
-	file << "P_POS=";
+	file << "P1_POS=";
 	file << pos.X << "," << pos.Y << std::endl;
 	std::cout << "player: saved\n";
 }
 
 void	player::load_player(const std::string &param, const std::string &arg)
 {
+	std::size_t	pos;
+
+	if (param.at(0) != 'P' || param.at(2) != '_')
+		return;
+	if (param.substr(3).compare("POS") == 0){
+		if ((pos = arg.find(',')) == std::string::npos)
+			return;
+		_design->setPosition(irr::core::vector3df(std::atoi(arg.substr(pos + 1).c_str()) * _config->TILE_SIZE, _config->TILE_SIZE, std::atoi(arg.substr(0, pos).c_str()) * _config->TILE_SIZE));
+	}
 }

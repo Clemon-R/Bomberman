@@ -42,6 +42,7 @@ bool	gui_handler::window_handler(const irr::SEvent& event)
 			break;
 
 		case CodeEventGui::CHARGE:
+			_gui.load_game(_gui.get_text());
 			break;
 
 		case CodeEventGui::BACK:
