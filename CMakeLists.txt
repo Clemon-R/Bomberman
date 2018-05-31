@@ -72,6 +72,6 @@ install(FILES ressources/images/btn_save_1.png ressources/images/btn_save_2.png 
 install(FILES ressources/images/btn_back_1.png ressources/images/btn_back_2.png ressources/images/btn_back_3.png DESTINATION ressources/images)
 install(FILES ressources/images/wall_1.png ressources/images/wall_2.png ressources/images/wall_3.png DESTINATION ressources/images)
 install(FILES ressources/images/bric_1.png ressources/images/bric_2.png ressources/images/bric_3.png DESTINATION ressources/images)
-install(FILES ressources/images/ground_1.png ressources/images/ground_2.png ressources/images/ground_3.png DESTINATION ressources/images)
+install(FILES ressources/images/ground_1.jpg ressources/images/ground_2.jpg ressources/images/ground_3.jpg DESTINATION ressources/images)
 install(FILES ressources/images/break_1.png ressources/images/break_2.png ressources/images/break_3.png DESTINATION ressources/images)
 install(FILES ressources/skin/sydney.bmp ressources/skin/sydney.md2 DESTINATION ressources/skin)
