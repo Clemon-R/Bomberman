@@ -73,7 +73,7 @@ void	bomb::explode()
 		current = _smgr->addCubeSceneNode(_config->TILE_SIZE);
 		if (!current)
 			throw exception("Impossible to add cube");
-		current->setMaterialTexture(0, database::load_img("tnt", ".png"));
+		current->setMaterialTexture(0, database::load_img("fire", ".png"));
 		pos.X += i % 2 - 2 * (i == 3);
 		pos.Y += (i + 1) % 2 - 2 * (i == 2);
 		current->setPosition(utils::convert_position(pos, *_config));
@@ -84,7 +84,7 @@ void	bomb::explode()
 	current = _smgr->addCubeSceneNode(_config->TILE_SIZE);
 	if (!current)
 		throw exception("Impossible to add cube");
-	current->setMaterialTexture(0, database::load_img("tnt", ".png"));
+	current->setMaterialTexture(0, database::load_img("fire", ".png"));
 	current->setPosition(utils::convert_position(pos, *_config));
 	_fires.push_back(current);
 	std::cout << "bomb: exploded\n";
