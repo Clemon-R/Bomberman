@@ -25,6 +25,9 @@ public:
 
 	irr::core::position2di	get_position() const;
 	irr::core::position2di	get_real_position() const;
+
+	void	drop_bomb();
+
 private:
 	void	play();
 	irr::core::position2di	convert_pos(const irr::core::vector3df &pos) const;

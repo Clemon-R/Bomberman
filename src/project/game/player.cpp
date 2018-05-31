@@ -16,7 +16,7 @@ _anim(irr::scene::EMAT_STAND), _rotate(0, 0, 0), _break(false)
 	irr::scene::IAnimatedMesh	*mesh = nullptr;
 
 	_driver = _graphic->getVideoDriver();
-    	_smgr = _graphic->getSceneManager();
+	_smgr = _graphic->getSceneManager();
 	if (!_driver || !_smgr)
 		throw exception("Impossible to find the driver");
 	mesh = _smgr->getMesh("ressources/skin/sydney.md2");
@@ -110,4 +110,16 @@ irr::core::position2di	player::get_real_position() const
 {
 	return (irr::core::position2di(_design->getPosition().Z,
 		_design->getPosition().X));
+}
+
+void	player::drop_bomb()
+{
+	irr::scene::IMeshSceneNode	*current = _smgr->addCubeSceneNode(_config->TILE_SIZE);
+	irr::video::ITexture	*bomb = database::load_img("tnt", ".png");
+
+	if (!current)
+		return;
+	current->setPosition(irr::core::vector3df(get_real_position().Y,
+		_config->TILE_SIZE, get_real_position().X));
+	current->setMaterialTexture(0, bomb);
 }
