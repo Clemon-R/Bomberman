@@ -34,7 +34,6 @@ public:
 	void	set_rotation(const std::size_t dir);
 private:
 	void	play();
-	irr::core::position2di	convert_pos(const irr::core::vector3df &pos) const;
 
 	irr::core::vector3df	_rotate;
 	irr::scene::EMD2_ANIMATION_TYPE	_anim;

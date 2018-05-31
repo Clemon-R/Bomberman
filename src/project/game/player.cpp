@@ -8,6 +8,7 @@
 #include "project/game/player.hpp"
 #include "exception.hpp"
 #include "project/database.hpp"
+#include "project/utils.hpp"
 #include <fstream>
 
 player::player(irr::IrrlichtDevice *graphic, config *config) : _graphic(graphic), _config(config),
@@ -58,7 +59,7 @@ void	player::refresh()
 void	player::move_to(const irr::core::position2di &pos)
 {
 	int	delay = 0;
-	irr::core::position2di	old = convert_pos(_target);
+	irr::core::position2di	old = utils::convert_vector(_target, *_config);
 	irr::core::position2di	player = get_position();
 	irr::scene::ISceneNodeAnimator	*anim = nullptr;
 
@@ -89,13 +90,7 @@ void	player::move_to(const irr::core::position2di &pos)
 void	player::play()
 {
 	if (_design->getPosition().X != _target.X || _design->getPosition().Z != _target.Z)
-		move_to(convert_pos(_target));
-}
-
-irr::core::position2di	player::convert_pos(const irr::core::vector3df &pos) const
-{
-	return (irr::core::position2di(pos.Z / _config->TILE_SIZE,
-		pos.X / _config->TILE_SIZE));
+		move_to(utils::convert_vector(_target, *_config));
 }
 
 void	player::stop()
@@ -114,7 +109,7 @@ void	player::pause()
 
 irr::core::position2di	player::get_position() const
 {
-	return (convert_pos(_design->getPosition()));
+	return (utils::convert_vector(_design->getPosition(), *_config));
 }
 
 irr::core::position2di	player::get_real_position() const
@@ -149,7 +144,7 @@ void	player::load_player(const std::string &param, const std::string &arg)
 
 void	player::set_position(const irr::core::position2di &pos)
 {
-	_target = irr::core::vector3df(pos.Y * _config->TILE_SIZE, _target.Y, pos.X * _config->TILE_SIZE);
+	_target = utils::convert_position(pos, *_config);
 	if (_design)
 		_design->setPosition(_target);
 }

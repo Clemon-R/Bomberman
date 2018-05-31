@@ -49,3 +49,22 @@ irr::core::rect<irr::s32>	utils::get_pos(irr::video::ITexture *elem, const irr::
 	result.LowerRightCorner = irr::core::position2di(pos.X + elem->getSize().Width, pos.Y + elem->getSize().Height);
 	return (result);
 }
+
+irr::core::position2di	utils::convert_vector(const irr::core::vector3df &pos, config &config)
+{
+	irr::core::position2di	result;
+
+	result.X = pos.Z / config.TILE_SIZE;
+	result.Y = pos.X / config.TILE_SIZE;
+	return (result);
+}
+
+irr::core::vector3df	utils::convert_position(const irr::core::position2di &pos, config &config)
+{
+	irr::core::vector3df	result;
+
+	result.Y = config.TILE_SIZE;
+	result.Z = pos.X * config.TILE_SIZE;
+	result.X = pos.Y * config.TILE_SIZE;
+	return (result);
+}
