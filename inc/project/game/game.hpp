@@ -64,7 +64,8 @@ private:
 	void	save_map(std::ofstream	&file);
 	void	load_map(const std::string &map);
 
-	player	*_player;
+	player	*_current;
+	std::list<std::unique_ptr<player>>	_players;
 	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>	_floor;
 
 	irr::IrrlichtDevice	*_graphic;

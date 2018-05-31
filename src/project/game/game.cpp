@@ -16,7 +16,7 @@
 #include <string>
 
 game::game(irr::IrrlichtDevice *graphic, config *config, project *project) : _graphic(graphic), _config(config),
-_break(false), _player(nullptr), _project(project), _handler(new game_handler(graphic, *this))
+_break(false), _current(nullptr), _project(project), _handler(new game_handler(graphic, *this))
 {
 	std::cout << "game: init...\n";
 	_driver = _graphic->getVideoDriver();
@@ -25,8 +25,13 @@ _break(false), _player(nullptr), _project(project), _handler(new game_handler(gr
 	if (!_driver || !_env || !_smgr)
 		throw exception("Impossible to find the driver");
 	generate_floor();
-	_player = new player(_graphic, _config);
-	_player->refresh();
+	for (int i = 0;i < 4;i += 1){
+		_players.push_back(std::make_unique<player>(_graphic, _config));
+		_players.back()->set_position(irr::core::position2di(i % 2 * (_config->TILE_COUNT - 3) + 1, i / 2 * (_config->TILE_COUNT - 3) + 1));
+		_players.back()->set_rotation(i / 2 * 180);
+		_players.back()->spawn();
+	}
+	_current = _players.back().get();
 	game_menu();
 	_graphic->setEventReceiver(_handler.get());
 	std::cout << "game: initiated\n";
@@ -86,8 +91,12 @@ void	game::game_menu()
 
 void	game::run()
 {
-	if (_player && !_break)
-		_player->refresh();
+	if (!_break){
+		if (_current)
+			_current->refresh();
+		for (const auto &player : _players)
+			player->refresh();
+	}
 	_smgr->drawAll();
 	_env->drawAll();
 }
@@ -183,8 +192,8 @@ void	game::draw_wall()
 void	game::pause()
 {
 	printf("game: pause\n");
-	if (_player)
-		_player->pause();
+	if (_current)
+		_current->pause();
 	break_menu();
 	_break = true;
 }
@@ -198,7 +207,7 @@ void	game::play()
 
 player	*game::get_player()
 {
-	return (_player);
+	return (_current);
 }
 
 bool	game::is_break() const
@@ -281,8 +290,10 @@ void	game::load_map(const std::string &map)
 
 	}
 	draw_wall();
-	if (_player)
-		_player->create_player();
+	for (const auto &player : _players)
+		player->spawn();
+	if (_current)
+		_current->spawn();
 	std::cout << "game: map loaded\n";
 }
 
@@ -297,8 +308,8 @@ void	game::save_game(const std::string &filename)
 	if (!file.is_open())
 		throw exception("Impossible to write the save");
 	save_map(file);
-	if (_player)
-		_player->save_player(file);
+	if (_current)
+		_current->save_player(file);
 	file.close();
 	std::cout << "game: saved\n";
 }
@@ -330,8 +341,8 @@ void	game::load_game(const std::string &filename)
 			param = line.substr(0, pos);
 			arg = line.substr(pos + 1);
 			dispatch_load(param, arg);
-			if (_player)
-				_player->load_player(param, arg);
+			if (_current)
+				_current->load_player(param, arg);
 			arg.clear();
 		}catch (const std::exception &error){
 			std::cerr << "game: " << error.what() << std::endl;

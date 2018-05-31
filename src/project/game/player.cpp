@@ -11,7 +11,7 @@
 #include <fstream>
 
 player::player(irr::IrrlichtDevice *graphic, config *config) : _graphic(graphic), _config(config),
-_anim(irr::scene::EMAT_STAND), _rotate(0, 0, 0), _break(false)
+_anim(irr::scene::EMAT_STAND), _rotate(0, 0, 0), _break(false), _design(nullptr)
 {
 	std::size_t	mid = _config->GAME_AREA / 2;
 
@@ -21,11 +21,10 @@ _anim(irr::scene::EMAT_STAND), _rotate(0, 0, 0), _break(false)
 	if (!_driver || !_smgr)
 		throw exception("Impossible to find the driver");
 	_target = irr::core::vector3df(mid, _config->TILE_SIZE, mid);
-	create_player();
 	std::cout << "player: initiated\n";
 }
 
-void	player::create_player()
+void	player::spawn()
 {
 	irr::scene::IAnimatedMesh	*mesh = nullptr;
 
@@ -144,7 +143,20 @@ void	player::load_player(const std::string &param, const std::string &arg)
 	if (param.substr(3).compare("POS") == 0){
 		if ((pos = arg.find(',')) == std::string::npos)
 			return;
-		_design->setPosition(irr::core::vector3df(std::atoi(arg.substr(pos + 1).c_str()) * _config->TILE_SIZE, _config->TILE_SIZE, std::atoi(arg.substr(0, pos).c_str()) * _config->TILE_SIZE));
-		_target = _design->getPosition();
+		set_position(irr::core::position2di(std::atoi(arg.substr(0, pos).c_str()), std::atoi(arg.substr(pos + 1).c_str())));
 	}
+}
+
+void	player::set_position(const irr::core::position2di &pos)
+{
+	_target = irr::core::vector3df(pos.Y * _config->TILE_SIZE, _target.Y, pos.X * _config->TILE_SIZE);
+	if (_design)
+		_design->setPosition(_target);
+}
+
+void	player::set_rotation(const std::size_t dir)
+{
+	_rotate = irr::core::vector3df(0, dir, 0);
+	if (_design)
+		_design->setRotation(_rotate);
 }
