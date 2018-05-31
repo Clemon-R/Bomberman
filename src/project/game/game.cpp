@@ -40,6 +40,8 @@ _break(false), _current(nullptr), _project(project), _handler(new game_handler(g
 game::~game()
 {
 	std::cout << "game: destroying\n";
+	for (auto &player : _players)
+		player.reset(nullptr);
 	_handler.reset(nullptr);
 	std::cout << "game: destroyed\n";
 }

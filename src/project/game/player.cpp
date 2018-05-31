@@ -25,9 +25,16 @@ _anim(irr::scene::EMAT_STAND), _rotate(0, 0, 0), _break(false), _design(nullptr)
 	std::cout << "player: initiated\n";
 }
 
+player::~player()
+{
+	std::cout << "player: destroying...\n";
+	std::cout << "player: destoyed\n";
+}
+
 void	player::spawn()
 {
 	irr::scene::IAnimatedMesh	*mesh = nullptr;
+	float	size = 0.5f * _config->GAME_SCALE;
 
 	mesh = _smgr->getMesh("ressources/skin/sydney.md2");
 	if (!mesh)
@@ -40,6 +47,7 @@ void	player::spawn()
 	_design->setMD2Animation(_anim);
 	_design->setRotation(_rotate);
 	_design->setPosition(_target);
+	_design->setScale(irr::core::vector3df(size, size, size));
 }
 
 void	player::refresh()

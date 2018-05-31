@@ -16,6 +16,7 @@ class	player
 {
 public:
 	player(irr::IrrlichtDevice *graphic, config *config);
+	~player();
 
 	void	refresh();
 	void	pause();
