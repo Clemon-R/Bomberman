@@ -6,10 +6,12 @@
 */
 
 #include "project/game/player.hpp"
+#include "project/game/bomb.hpp"
 #include "exception.hpp"
 #include "project/database.hpp"
 #include "project/utils.hpp"
 #include <fstream>
+#include <memory>
 
 player::player(irr::IrrlichtDevice *graphic, config *config) : _graphic(graphic), _config(config),
 _anim(irr::scene::EMAT_STAND), _rotate(0, 0, 0), _break(false), _design(nullptr)
@@ -22,12 +24,14 @@ _anim(irr::scene::EMAT_STAND), _rotate(0, 0, 0), _break(false), _design(nullptr)
 	if (!_driver || !_smgr)
 		throw exception("Impossible to find the driver");
 	_target = irr::core::vector3df(mid, _config->TILE_SIZE, mid);
+	//_timer->start();
 	std::cout << "player: initiated\n";
 }
 
 player::~player()
 {
 	std::cout << "player: destroying...\n";
+	_timer->stop();
 	std::cout << "player: destoyed\n";
 }
 
@@ -128,14 +132,10 @@ irr::core::position2di	player::get_real_position() const
 
 void	player::drop_bomb()
 {
-	irr::scene::IMeshSceneNode	*current = _smgr->addCubeSceneNode(_config->TILE_SIZE);
-	irr::video::ITexture	*bomb = database::load_img("tnt", ".png");
-
-	if (!current)
-		return;
-	current->setPosition(irr::core::vector3df(get_real_position().Y,
-		_config->TILE_SIZE, get_real_position().X));
-	current->setMaterialTexture(0, bomb);
+	_placed_bomb.push_back({std::unique_ptr<bomb>(new bomb(
+		irr::core::vector3df(get_real_position().Y,
+			_config->TILE_SIZE, get_real_position().X))),
+		_timer->getTime()});
 }
 
 void	player::save_player(std::ofstream &file)

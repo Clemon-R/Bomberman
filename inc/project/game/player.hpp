@@ -8,9 +8,14 @@
 #ifndef PLAYER_HPP_
 	#define PLAYER_HPP_
 
+	#include "project/game/bomb.hpp"
 	#include "irrlicht/irrlicht.h"
+	#include "irrlicht/irrTypes.h"
+	#include "irrlicht/ITimer.h"
 	#include "project/config.hpp"
 	#include <iostream>
+	#include <vector>
+	#include <memory>
 
 class	player
 {
@@ -50,5 +55,7 @@ private:
 	irr::scene::ISceneManager		*_smgr;
 
 	irr::scene::IAnimatedMeshSceneNode	*_design;
+	irr::ITimer	*_timer;
+	std::vector<std::unique_ptr<bomb, irr::u32>>	_placed_bomb;
 };
 #endif /* !PLAYER_HPP_ */

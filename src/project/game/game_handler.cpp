@@ -87,7 +87,6 @@ bool	game_handler::key_handler(const irr::SEvent& event)
 bool	game_handler::move_handler(int key)
 {
 	player	*target = _game.get_player();
-//	irr::scene::ISceneNode *test;
 
 	switch (key){
 		case irr::KEY_UP:
@@ -108,8 +107,6 @@ bool	game_handler::move_handler(int key)
 		
 		case irr::KEY_SPACE:
 		target->drop_bomb();
-		// test = _graphic->getSceneManager()->addSphereSceneNode(7.5);
-		// test->setPosition(irr::core::vector3df(target->get_real_position().Y, 30, target->get_real_position().X));
 		break;
 
 		default:
