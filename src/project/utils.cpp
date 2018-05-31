@@ -68,3 +68,11 @@ irr::core::vector3df	utils::convert_position(const irr::core::position2di &pos, 
 	result.X = pos.Y * config.TILE_SIZE;
 	return (result);
 }
+
+std::size_t	utils::get_milliseconds()
+{
+	std::chrono::milliseconds	ms = std::chrono::duration_cast<std::chrono::milliseconds >(
+		std::chrono::system_clock::now().time_since_epoch()
+	);
+	return (ms.count());
+}

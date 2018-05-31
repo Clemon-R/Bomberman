@@ -11,6 +11,7 @@
 	#include "irrlicht/irrlicht.h"
 	#include "project/config.hpp"
 	#include <iostream>
+	#include <chrono>
 
 class	utils
 {
@@ -20,5 +21,6 @@ public:
 	static irr::core::rect<irr::s32>	get_center_img(irr::video::ITexture *img, const irr::core::position2di &size);
 	static irr::core::position2di		convert_vector(const irr::core::vector3df &pos, config &config);
 	static irr::core::vector3df		convert_position(const irr::core::position2di &pos, config &config);
+	static std::size_t			get_milliseconds();
 };
 #endif /* !UTILS_HPP_ */

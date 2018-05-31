@@ -54,6 +54,8 @@ public:
 	void	load_game(const std::string &filename);
 
 	void	set_camera();
+
+	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>	get_floor();
 private:
 	void	generate_floor();
 	void	draw_wall();

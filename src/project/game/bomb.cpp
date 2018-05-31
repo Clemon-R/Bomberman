@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2018
 ** indie studio
 ** File description:
-** bomb class definition
+** bomb
 */
 
 #include "project/game/bomb.hpp"
@@ -10,28 +10,121 @@
 #include "project/database.hpp"
 #include "project/utils.hpp"
 
-bomb::bomb(irr::core::vector3df bomb_pos)
+bomb::bomb(game *game_parent, player *parent, irr::IrrlichtDevice *graphic, config *config) : _graphic(graphic), _config(config),
+_design(nullptr), _game_parent(game_parent), _parent(parent), _start(utils::get_milliseconds()), _exploded(false)
 {
-	put_bomb(bomb_pos);
+	std::cout << "bomb: init...\n";
+	if (!_parent)
+		throw exception("Bomb need parent");
+	_driver = _graphic->getVideoDriver();
+	_env = _graphic->getGUIEnvironment();
+	_smgr = _graphic->getSceneManager();
+	if (!_driver || !_env || !_smgr)
+		throw exception("Impossible to find the driver");
+	spawn();
+	std::cout << "bomb: initiated\n";
 }
 
 bomb::~bomb()
 {
-	explode_bomb();
+	std::cout << "bomb: destroying...\n";
+	for (auto &fire : _fires)
+		fire->remove();
+	std::cout << "bomb: destoyed\n";
 }
 
-void	bomb::put_bomb(irr::core::vector3df bomb_pos)
+void	bomb::spawn()
 {
-	irr::scene::IMeshSceneNode	*current = _smgr->addCubeSceneNode(_config->TILE_SIZE);
-	irr::video::ITexture	*bomb = database::load_img("tnt", ".png");
+	_design = _smgr->addCubeSceneNode(_config->TILE_SIZE);
+	if (!_design)
+		throw exception("Impossible to add cube");
+	_design->setMaterialTexture(0, database::load_img("tnt", ".png"));
+	_design->setPosition(utils::convert_position(_parent->get_position(), *_config));
+}
 
+void	bomb::run()
+{
+	if (!_exploded && utils::get_milliseconds() - _start >= 2000)
+		explode();
+	else if (_exploded){
+		kill();
+		if (utils::get_milliseconds() - _start >= 3000){
+			remove_brick();
+			_parent->bomb_available();
+			delete this;
+		}
+	}
+}
+
+void	bomb::remove_brick()
+{
+	std::cout << "A" << std::endl;
+	irr::scene::ISceneNode	*current = nullptr;
+	std::cout << "B" << std::endl;
+	irr::core::position2di	pos = utils::convert_vector(_design->getPosition(), *_config);
+	std::cout << "C" << std::endl;
+	// std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>::reverse_iterator	y = _game_parent->get_floor().rbegin();
+	// std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>::iterator	x;
+
+	std::cout << "bomb: removing brick..." << std::endl;
+	for (int i = 0; i < 4; i += 1){
+		// for (;y != _game_parent->get_floor().rend();y++){
+		// 	x = y->begin();
+		// 	for (;x != y->end();x++){
+		// 		std::cout << "get0:" << std::get<0>(*x) << std::endl;
+		// 		std::cout << "get1:" << std::get<1>(*x) << std::endl;
+		// 		std::cout << "get2:" << std::get<2>(*x) << std::endl;
+		// 	}
+		// }
+		current = _smgr->addCubeSceneNode(_config->TILE_SIZE);
+		if (!current)
+			throw exception("Impossible to add cube");
+		current->setMaterialTexture(0, database::load_img("ground"));
+		pos.X += i % 2 - 2 * (i == 3);
+		pos.Y += (i + 1) % 2 - 2 * (i == 2);
+		current->setPosition(utils::convert_position(pos, *_config));
+		pos.X -= i % 2 - 2 * (i == 3);
+		pos.Y -= (i + 1) % 2 - 2 * (i == 2);
+	}
+	current = _smgr->addCubeSceneNode(_config->TILE_SIZE);
 	if (!current)
-		return;
-	current->setPosition(bomb_pos);
-	current->setMaterialTexture(0, bomb);
+		throw exception("Impossible to add cube");
+	current->setMaterialTexture(0, database::load_img("ground"));
+	current->setPosition(utils::convert_position(pos, *_config));
+	std::cout << "bomb: brick removed" << std::endl;
 }
 
-void	bomb::explode_bomb()
+void	bomb::kill()
 {
-	std::cout << "Bomb exploded" << std::endl;
+
+}
+
+void	bomb::explode()
+{
+	irr::scene::ISceneNode	*current = nullptr;
+	irr::core::position2di	pos = utils::convert_vector(_design->getPosition(), *_config);
+
+	std::cout << "bomb: exploding...\n";
+	if (_design)
+		_design->remove();
+	_exploded = true;
+	for (int i = 0;i < 4;i += 1){
+		current = _smgr->addCubeSceneNode(_config->TILE_SIZE);
+		if (!current)
+			throw exception("Impossible to add cube");
+		current->setMaterialTexture(0, database::load_img("fire", ".png"));
+		pos.X += i % 2 - 2 * (i == 3);
+		pos.Y += (i + 1) % 2 - 2 * (i == 2);
+		current->setPosition(utils::convert_position(pos, *_config));
+		pos.X -= i % 2 - 2 * (i == 3);
+		pos.Y -= (i + 1) % 2 - 2 * (i == 2);
+		_fires.push_back(current);
+	}
+	current = _smgr->addCubeSceneNode(_config->TILE_SIZE);
+	if (!current)
+		throw exception("Impossible to add cube");
+	current->setMaterialTexture(0, database::load_img("fire", ".png"));
+	current->setPosition(utils::convert_position(pos, *_config));
+	_fires.push_back(current);
+	std::cout << "bomb: exploded\n";
 }

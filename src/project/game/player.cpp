@@ -13,8 +13,8 @@
 #include <fstream>
 #include <memory>
 
-player::player(irr::IrrlichtDevice *graphic, config *config) : _graphic(graphic), _config(config),
-_anim(irr::scene::EMAT_STAND), _rotate(0, 0, 0), _break(false), _design(nullptr)
+player::player(irr::IrrlichtDevice *graphic, config *config, game *parent) : _graphic(graphic), _config(config),
+_anim(irr::scene::EMAT_STAND), _rotate(0, 0, 0), _break(false), _design(nullptr), _bomb(nullptr), _parent(parent)
 {
 	std::size_t	mid = _config->GAME_AREA / 2;
 
@@ -24,14 +24,12 @@ _anim(irr::scene::EMAT_STAND), _rotate(0, 0, 0), _break(false), _design(nullptr)
 	if (!_driver || !_smgr)
 		throw exception("Impossible to find the driver");
 	_target = irr::core::vector3df(mid, _config->TILE_SIZE, mid);
-	//_timer->start();
 	std::cout << "player: initiated\n";
 }
 
 player::~player()
 {
 	std::cout << "player: destroying...\n";
-	_timer->stop();
 	std::cout << "player: destoyed\n";
 }
 
@@ -66,6 +64,13 @@ void	player::refresh()
 		_design->setRotation(_rotate);
 		std::cout << "player: arrived\n";
 	}
+	if (_bomb)
+		_bomb->run();
+}
+
+void	player::bomb_available()
+{
+	_bomb = nullptr;
 }
 
 void	player::move_to(const irr::core::position2di &pos)
@@ -130,14 +135,6 @@ irr::core::position2di	player::get_real_position() const
 		_design->getPosition().X));
 }
 
-void	player::drop_bomb()
-{
-	_placed_bomb.push_back({std::unique_ptr<bomb>(new bomb(
-		irr::core::vector3df(get_real_position().Y,
-			_config->TILE_SIZE, get_real_position().X))),
-		_timer->getTime()});
-}
-
 void	player::save_player(std::ofstream &file)
 {
 	irr::core::position2di	pos = get_position();
@@ -174,4 +171,10 @@ void	player::set_rotation(const std::size_t dir)
 	_rotate = irr::core::vector3df(0, dir, 0);
 	if (_design)
 		_design->setRotation(_rotate);
+}
+
+void	player::drop_bomb()
+{
+	if (!_bomb)
+		_bomb = new bomb(_parent, this, _graphic, _config);
 }

@@ -26,7 +26,7 @@ _break(false), _current(nullptr), _project(project), _handler(new game_handler(g
 		throw exception("Impossible to find the driver");
 	generate_floor();
 	for (int i = 0;i < 4;i += 1){
-		_players.push_back(std::make_unique<player>(_graphic, _config));
+		_players.push_back(std::make_unique<player>(_graphic, _config, this));
 		_players.back()->set_position(irr::core::position2di(i % 2 * (_config->TILE_COUNT - 3) + 1, i / 2 * (_config->TILE_COUNT - 3) + 1));
 		_players.back()->set_rotation(i / 2 * 180);
 		_players.back()->spawn();
@@ -121,13 +121,14 @@ void	game::generate_floor()
 		if (i / _config->TILE_COUNT != y){
 			_floor.push_back(line);
 			line.clear();
-			y = i / _config->TILE_COUNT;
+			y += 1;
+			x = 0;
 		}
-		x = i % _config->TILE_COUNT;
 		if (x == 0 || y == 0 || x == _config->TILE_COUNT - 1 || y == _config->TILE_COUNT - 1)
 			line.push_back(std::make_tuple(x, y, GroundType::WALL, wall));
 		else
 			line.push_back(std::make_tuple(x, y, GroundType::GROUND, ground));
+		x += 1;
 	}
 	if (line.size() > 0)
 		_floor.push_back(line);
@@ -169,12 +170,12 @@ void	game::set_camera()
 
 void	game::draw_wall()
 {
-	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>::iterator	y = _floor.begin();
+	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>::reverse_iterator	y = _floor.rbegin();
 	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>::iterator	x;
 	irr::scene::IMeshSceneNode *current = nullptr;
 
 	printf("game: spawning map...\n");
-	for (;y != _floor.end();y++){
+	for (;y != _floor.rend();y++){
 		x = y->begin();
 		for (;x != y->end();x++){
 			current = _smgr->addCubeSceneNode(_config->TILE_SIZE);
@@ -353,4 +354,9 @@ void	game::load_game(const std::string &filename)
 	file.close();
 	set_camera();
 	std::cout << "game: loaded\n";
+}
+
+std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>	game::get_floor()
+{
+	return (_floor);
 }
