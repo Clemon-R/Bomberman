@@ -16,6 +16,7 @@ class	player
 {
 public:
 	player(irr::IrrlichtDevice *graphic, config *config);
+	~player();
 
 	void	refresh();
 	void	pause();
@@ -24,13 +25,19 @@ public:
 	void	stop();
 
 	irr::core::position2di	get_position() const;
+	void	set_position(const irr::core::position2di &pos);
 	irr::core::position2di	get_real_position() const;
 
 	void	drop_bomb();
 
+	void	save_player(std::ofstream &file);
+	void	load_player(const std::string &param, const std::string &arg);
+
+	void	spawn();
+	void	set_rotation(const std::size_t dir);
+
 private:
 	void	play();
-	irr::core::position2di	convert_pos(const irr::core::vector3df &pos) const;
 
 	irr::core::vector3df	_rotate;
 	irr::scene::EMD2_ANIMATION_TYPE	_anim;

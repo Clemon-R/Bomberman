@@ -22,9 +22,9 @@ project::~project()
 	std::cout << "project: destructing...\n";
 	if (_config)
 		saver::save_config(*_config);
-	_config.release();
-	_interface.release();
-	_graphic.release();
+	_config.reset(nullptr);
+	_interface.reset(nullptr);
+	_graphic.reset(nullptr);
 	std::cout << "project: destructed\n";
 }
 

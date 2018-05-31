@@ -33,8 +33,20 @@ bool	gui_handler::window_handler(const irr::SEvent& event)
 			_graphic->closeDevice();
 			break;
 
+		case CodeEventGui::LOAD:
+			_gui.load_menu();
+			break;
+
 		case CodeEventGui::PLAY:
 			_gui.play_game();
+			break;
+
+		case CodeEventGui::CHARGE:
+			_gui.load_game(_gui.get_text());
+			break;
+
+		case CodeEventGui::BACK:
+			_gui.main_menu();
 			break;
 
 		default:

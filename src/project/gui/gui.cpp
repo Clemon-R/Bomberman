@@ -45,17 +45,57 @@ void	gui::main_menu()
 {
 	irr::video::ITexture	*img = database::load_img("btn_exit", ".png");
 	irr::video::ITexture	*img1 = database::load_img("btn_play", ".png");
+	irr::video::ITexture	*img2 = database::load_img("btn_load", ".png");
+
+	if (!img || !img1 || !img2)
+		throw exception("Impossible to load image");
+	_env->clear();
+	utils::add_button(_env, img, irr::core::position2di((_config->WINDOW_WIDTH - img->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 + img->getSize().Height * 2), CodeEventGui::EXIT);
+	utils::add_button(_env, img1, irr::core::position2di((_config->WINDOW_WIDTH - img1->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 - img1->getSize().Height), CodeEventGui::PLAY);
+	utils::add_button(_env, img2, irr::core::position2di((_config->WINDOW_WIDTH - img2->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 + img2->getSize().Height / 2), CodeEventGui::LOAD);
+	_graphic->setEventReceiver(_handler.get());
+}
+
+void	gui::load_menu()
+{
+	irr::video::ITexture	*img = database::load_img("btn_load", ".png");
+	irr::video::ITexture	*img1 = database::load_img("btn_back", ".png");
+	std::size_t	x = 0;
 
 	if (!img || !img1)
 		throw exception("Impossible to load image");
+	x = (_config->WINDOW_WIDTH - img1->getSize().Width) / 2;
 	_env->clear();
-	utils::add_button(_env, img, irr::core::position2di((_config->WINDOW_WIDTH - img->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 + img->getSize().Height / 2), CodeEventGui::EXIT);
-	utils::add_button(_env, img1, irr::core::position2di((_config->WINDOW_WIDTH - img1->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 - img1->getSize().Height), CodeEventGui::PLAY);
 	_graphic->setEventReceiver(_handler.get());
+	_text = _env->addEditBox(L"", irr::core::recti(x, _config->WINDOW_HEIGHT / 2 - img1->getSize().Height, x + img->getSize().Width, _config->WINDOW_HEIGHT / 2));
+	utils::add_button(_env, img, irr::core::position2di(x, _config->WINDOW_HEIGHT / 2 + img->getSize().Height / 2), CodeEventGui::CHARGE);
+	utils::add_button(_env, img1, irr::core::position2di(x, _config->WINDOW_HEIGHT / 2 + img1->getSize().Height * 2), CodeEventGui::BACK);
 }
 
 void	gui::play_game()
 {
 	_graphic->setEventReceiver(nullptr);
 	_project->set_interface(new game(_graphic, _config, _project));
+}
+
+void	gui::load_game(const std::string &filename)
+{
+	game	*current = nullptr;
+
+	_graphic->setEventReceiver(nullptr);
+	current = new game(_graphic, _config, _project);
+	if (!current)
+		return;
+	current->load_game(filename);
+	_project->set_interface(current);
+}
+
+const std::string	gui::get_text()
+{
+	std::string	result;
+
+	for (int i = 0;_text && _text->getText() && _text->getText()[i];i++){
+		result += _text->getText()[i];
+	}
+	return (result);
 }

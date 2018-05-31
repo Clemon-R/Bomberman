@@ -41,18 +41,32 @@ public:
 	void	play();
 
 	bool	is_break() const;
+
+	void	game_menu();
+	void	break_menu();
+	void	save_menu();
+
 	void	back_to_main();
+
+	const std::string	get_text();
+
+	void	save_game(const std::string &filename);
+	void	load_game(const std::string &filename);
+
+	void	set_camera();
 private:
 	void	generate_floor();
 	void	draw_wall();
+	void	generate_map();
 
-	void	set_camera();
+	void	dispatch_load(const std::string &param, const std::string &arg);
 
-	void	break_menu();
-	void	game_menu();
+	void	save_map(std::ofstream	&file);
+	void	load_map(const std::string &map);
 
-	player	*_player;
-	std::list<std::tuple<GroundType, irr::video::ITexture *>>	_floor;
+	player	*_current;
+	std::list<std::unique_ptr<player>>	_players;
+	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>	_floor;
 
 	irr::IrrlichtDevice	*_graphic;
 	irr::video::IVideoDriver	*_driver;
@@ -62,5 +76,6 @@ private:
 	config			*_config;
 	bool			_break;
 	project	*_project;
+	irr::gui::IGUIEditBox	*_text;
 };
 #endif /* !GAME_HPP_ */

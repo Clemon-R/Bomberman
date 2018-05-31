@@ -42,6 +42,20 @@ bool	game_handler::window_handler(const irr::SEvent& event)
 		case CodeEventGame::LEAVE:
 			_game.back_to_main();
 			break;
+		
+		case CodeEventGame::SAVE:
+			_game.save_menu();
+			break;
+		
+		case CodeEventGame::BACKGAME:
+			_game.break_menu();
+			break;
+
+		case CodeEventGame::SAVEGAME:
+			//printf("game: text - %s\n", _game.get_text().c_str());
+			_game.save_game(_game.get_text());
+			_game.break_menu();
+			break;
 
 		default:
 		return (false);
