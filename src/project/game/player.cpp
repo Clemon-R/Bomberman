@@ -12,7 +12,7 @@
 #include <fstream>
 
 player::player(irr::IrrlichtDevice *graphic, config *config) : _graphic(graphic), _config(config),
-_anim(irr::scene::EMAT_STAND), _rotate(0, 0, 0), _break(false), _design(nullptr)
+_anim(irr::scene::EMAT_STAND), _rotate(0, 0, 0), _break(false), _design(nullptr), _bomb(nullptr)
 {
 	std::size_t	mid = _config->GAME_AREA / 2;
 
@@ -162,4 +162,10 @@ void	player::set_rotation(const std::size_t dir)
 	_rotate = irr::core::vector3df(0, dir, 0);
 	if (_design)
 		_design->setRotation(_rotate);
+}
+
+void	player::drop_bomb()
+{
+	if (!_bomb)
+		_bomb = new bomb(this, _graphic, _config);
 }

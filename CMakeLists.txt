@@ -17,6 +17,7 @@ set(BOMBERMAN_GAME
 	src/project/game/game.cpp
 	src/project/game/game_handler.cpp
 	src/project/game/player.cpp
+	src/project/game/bomb.cpp
 )
 
 set(BOMBERMAN_PROJECT

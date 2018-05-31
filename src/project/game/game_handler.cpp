@@ -107,8 +107,7 @@ bool	game_handler::move_handler(int key)
 		break;
 		
 		case irr::KEY_SPACE:
-		test = _graphic->getSceneManager()->addSphereSceneNode(7.5);
-		test->setPosition(irr::core::vector3df(target->get_real_position().Y, 30, target->get_real_position().X));
+		target->drop_bomb();
 		break;
 
 		default:

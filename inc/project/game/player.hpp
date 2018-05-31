@@ -10,6 +10,8 @@
 
 	#include "irrlicht/irrlicht.h"
 	#include "project/config.hpp"
+class	bomb;
+	#include "project/game/bomb.hpp"
 	#include <iostream>
 
 class	player
@@ -33,6 +35,8 @@ public:
 
 	void	spawn();
 	void	set_rotation(const std::size_t dir);
+
+	void	drop_bomb();
 private:
 	void	play();
 
@@ -41,6 +45,7 @@ private:
 
 	bool	_break;
 	irr::core::vector3df			_target;
+	bomb					*_bomb;
 	config					*_config;
 	irr::IrrlichtDevice			*_graphic;
 	irr::video::IVideoDriver		*_driver;
