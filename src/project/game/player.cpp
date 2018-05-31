@@ -62,6 +62,13 @@ void	player::refresh()
 		_design->setRotation(_rotate);
 		std::cout << "player: arrived\n";
 	}
+	if (_bomb)
+		_bomb->run();
+}
+
+void	player::bomb_available()
+{
+	_bomb = nullptr;
 }
 
 void	player::move_to(const irr::core::position2di &pos)

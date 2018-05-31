@@ -13,6 +13,7 @@
 class	player;
 	#include "project/game/player.hpp"
 	#include <iostream>
+	#include <list>
 
 class	bomb
 {
@@ -21,9 +22,16 @@ public:
 	~bomb();
 
 	void	spawn();
+	void	run();
 private:
+	void	explode();
+	void	kill();
+
 	irr::scene::ISceneNode	*_design;
 	player			*_parent;
+	std::size_t		_start;
+	bool			_exploded;
+	std::list<irr::scene::ISceneNode *>	_fires;
 
 	irr::IrrlichtDevice	*_graphic;
 	irr::video::IVideoDriver	*_driver;

@@ -37,6 +37,7 @@ public:
 	void	set_rotation(const std::size_t dir);
 
 	void	drop_bomb();
+	void	bomb_available();
 private:
 	void	play();
 
