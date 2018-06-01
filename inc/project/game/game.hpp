@@ -16,6 +16,7 @@ class	project;
 	#include "project/project.hpp"
 class	game_handler;
 	#include "project/game/game_handler.hpp"
+	#include "project/game/bomb.hpp"
 	#include "project/enum_list.hpp"
 	#include <iostream>
 	#include <list>
@@ -50,7 +51,9 @@ public:
 	void	set_camera();
 
 	std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *>	*get_floor(int x, int y);
-	player	*get_player_by_pos(int x, int y);
+	std::list<bomb *>	&get_bombs();
+	std::list<player *>	get_player_by_pos(int x, int y);
+
 	void	draw_all();
 	irr::scene::IMeshSceneNode	*add_wall(std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *> &floor);
 private:
@@ -67,6 +70,7 @@ private:
 
 	player	*_current;
 	std::list<std::unique_ptr<player>>	_players;
+	std::list<bomb *>			_bombs;
 	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *>>>	_floor;
 
 	irr::IrrlichtDevice	*_graphic;

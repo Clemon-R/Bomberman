@@ -13,7 +13,7 @@
 #include <string>
 
 bomb::bomb(player *parent, irr::IrrlichtDevice *graphic, config *config) : _graphic(graphic), _config(config),
-_design(nullptr), _parent(parent), _start(utils::get_milliseconds()), _exploded(false)
+_design(nullptr), _parent(parent), _start(utils::get_milliseconds()), _exploded(false), _end(false)
 {
 	std::cout << "bomb: init...\n";
 	if (!_parent)
@@ -29,12 +29,8 @@ _design(nullptr), _parent(parent), _start(utils::get_milliseconds()), _exploded(
 
 bomb::~bomb()
 {
-	irr::video::ITexture	*ground = database::load_img("ground");
-
 	std::cout << "bomb: destroying...\n";
 	for (auto &fire : _fires){
-		if (!ground)
-			continue;
 		std::get<4>(*fire)->remove();
 	}
 	std::cout << "bomb: destoyed\n";
@@ -51,20 +47,43 @@ void	bomb::spawn()
 
 void	bomb::run()
 {
+	if (_end)
+		return;
 	if (!_exploded && utils::get_milliseconds() - _start >= 2000)
 		explode();
 	else if (_exploded){
 		kill();
 		if (utils::get_milliseconds() - _start >= 3000){
 			_parent->bomb_available();
-			delete this;
+			for (auto &fire : _fires){
+				std::get<4>(*fire)->remove();
+			}
+			_end = true;
 		}
 	}
 }
 
+void	bomb::kill_by_list(std::list<player *> &list)
+{
+	for (auto &elem : list)
+		elem->dead();
+}
+
 void	bomb::kill()
 {
+	irr::core::position2di	pos = utils::convert_vector(_design->getPosition(), *_config);
+	std::list<player *>	list;
 
+	for (int i = 0;i < 4;i += 1){
+		pos.X += i % 2 - 2 * (i == 3);
+		pos.Y += (i + 1) % 2 - 2 * (i == 2);
+		list = _parent->get_parent()->get_player_by_pos(pos.X, pos.Y);
+		kill_by_list(list);
+		pos.X -= i % 2 - 2 * (i == 3);
+		pos.Y -= (i + 1) % 2 - 2 * (i == 2);
+	}
+	list = _parent->get_parent()->get_player_by_pos(pos.X, pos.Y);
+	kill_by_list(list);
 }
 
 void	bomb::change_to_fire(std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *> *floor)
@@ -103,5 +122,6 @@ void	bomb::explode()
 	}
 	ground = _parent->get_parent()->get_floor(pos.X, pos.Y);
 	change_to_fire(ground);
+	_design = std::get<4>(*ground);
 	std::cout << "bomb: exploded\n";
 }

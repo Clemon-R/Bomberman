@@ -32,6 +32,13 @@ player::~player()
 	std::cout << "player: destoyed\n";
 }
 
+void	player::dead()
+{
+	if (_design)
+		_design->remove();
+	_design = nullptr;
+}
+
 void	player::spawn()
 {
 	irr::scene::IAnimatedMesh	*mesh = nullptr;
@@ -57,7 +64,9 @@ void	player::spawn()
 
 void	player::refresh()
 {
-	if (_break){
+	if (!_design)
+		return;
+	else if (_break){
 		play();
 		_break = false;
 	}
@@ -69,12 +78,13 @@ void	player::refresh()
 		_design->setRotation(_rotate);
 		std::cout << "player: arrived\n";
 	}
-	if (_bomb)
-		_bomb->run();
 }
 
 void	player::bomb_available()
 {
+	if (!_bomb)
+		return;
+	//_parent->get_bombs().remove(_bomb);
 	_bomb = nullptr;
 }
 
@@ -85,6 +95,8 @@ void	player::move_to(const irr::core::position2di &pos)
 	irr::core::position2di	player = get_position();
 	irr::scene::ISceneNodeAnimator	*anim = nullptr;
 
+	if (!_design)
+		return;
 	std::cout << "player: moving...\n";
 	if ((pos.X == old.X && pos.Y == old.Y) ||
 		(player.X == pos.X && player.Y == pos.Y))
@@ -117,6 +129,8 @@ void	player::play()
 
 void	player::stop()
 {
+	if (!_design)
+		return;
 	_design->removeAnimators();
 	_design->setMD2Animation(irr::scene::EMAT_STAND);
 	_target = _design->getPosition();
@@ -125,19 +139,21 @@ void	player::stop()
 void	player::pause()
 {
 	_break = true;
+	if (!_design)
+		return;
 	_design->removeAnimators();
 	_design->setMD2Animation(irr::scene::EMAT_STAND);
 }
 
 irr::core::position2di	player::get_position() const
 {
-	return (utils::convert_vector(_design->getPosition(), *_config));
+	return (utils::convert_vector(_last, *_config));
 }
 
 irr::core::position2di	player::get_real_position() const
 {
-	return (irr::core::position2di(_design->getPosition().Z,
-		_design->getPosition().X));
+	return (irr::core::position2di(_last.Z,
+		_last.X));
 }
 
 void	player::save_player(std::ofstream &file)
@@ -181,8 +197,10 @@ void	player::set_rotation(const std::size_t dir)
 
 void	player::drop_bomb()
 {
-	if (!_bomb)
-		_bomb = new bomb(this, _graphic, _config);
+	if (_bomb)
+		return;
+	_bomb = new bomb(this, _graphic, _config);
+	_parent->get_bombs().push_back(_bomb);
 }
 
 game	*player::get_parent() const

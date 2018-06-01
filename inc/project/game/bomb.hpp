@@ -29,13 +29,15 @@ private:
 	void	explode();
 	void	change_to_fire(std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *> *floor);
 	void	kill();
+	void	kill_by_list(std::list<player *> &list);
 
 	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *> *>	_fires;
 
-	irr::scene::ISceneNode	*_design;
+	irr::scene::IMeshSceneNode	*_design;
 	player			*_parent;
 	std::size_t		_start;
 	bool			_exploded;
+	bool			_end;
 
 	irr::IrrlichtDevice	*_graphic;
 	irr::video::IVideoDriver	*_driver;

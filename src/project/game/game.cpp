@@ -54,7 +54,7 @@ void	game::break_menu()
 	irr::video::ITexture	*img1 = database::load_img("btn_continue", ".png");
 	irr::video::ITexture	*img2 = database::load_img("btn_save", ".png");
 
-	printf("game: break menu\n");
+	std::cout << "game: break menu\n";
 	if (!img || !bg || !img1 || !img2)
 		throw exception("Impossible to load image");
 	_env->clear();
@@ -85,7 +85,7 @@ void	game::game_menu()
 {
 	irr::video::ITexture	*img = database::load_img("btn_break", ".png");
 
-	printf("game: game menu\n");
+	std::cout << "game: game menu\n";
 	if (!img)
 		throw exception("Impossible to load image");
 	_env->clear();
@@ -94,10 +94,12 @@ void	game::game_menu()
 
 void	game::run()
 {
+	auto	bomb = _bombs.begin();
+
 	if (!_break){
-		if (_current)
-			_current->refresh();
-		for (const auto &player : _players)
+		for (;bomb != _bombs.end();bomb++)
+			(*bomb)->run();
+		for (auto &player : _players)
 			player->refresh();
 	}
 	_smgr->drawAll();
@@ -111,7 +113,7 @@ void	game::generate_floor()
 	std::size_t	x = 0;
 	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *>>	line;
 
-	printf("game: generating map...\n");
+	std::cout << "game: generating map...\n";
 	if (!wall)
 		throw exception("Impossible to load image");
 	_config->TILE_SIZE = wall->getSize().Height;
@@ -133,7 +135,7 @@ void	game::generate_floor()
 	if (line.size() > 0)
 		_floor.push_back(line);
 	//generate_map();
-	printf("game: map generated\n");
+	std::cout << "game: map generated\n";
 }
 
 void 	game::generate_map()
@@ -160,10 +162,10 @@ void	game::set_camera()
 	irr::scene::ICameraSceneNode	*cam = _smgr->addCameraSceneNode();
 	std::size_t			mid = _config->GAME_AREA / 2;
 
-	printf("game: adding the camera...\n");
+	std::cout << "game: adding the camera...\n";
 	cam->setPosition(irr::core::vector3df(mid - _config->TILE_SIZE / 2, _config->GAME_AREA * 0.74, mid));
 	cam->setTarget(irr::core::vector3df(mid - _config->TILE_SIZE / 2, 0, mid));
-	printf("game: camera added\n");
+	std::cout << "game: camera added\n";
 }
 
 
@@ -193,7 +195,7 @@ void	game::draw_floor()
 	irr::scene::IMeshSceneNode	*current = nullptr;
 	irr::video::ITexture	*ground = database::load_img("ground");
 
-	printf("game: spawning floor...\n");
+	std::cout << "game: spawning floor...\n";
 	if (!ground)
 		throw exception("Impossible to load ground");
 	for (;y != _floor.rend();y++){
@@ -209,6 +211,7 @@ void	game::draw_floor()
 			current->setMaterialTexture(0, ground);
 		}
 	}
+	std::cout << "game: floor spawned\n";
 }
 
 void	game::draw_wall()
@@ -217,7 +220,7 @@ void	game::draw_wall()
 	auto	x = y->begin();
 	irr::scene::IMeshSceneNode *current = nullptr;
 
-	printf("game: spawning wall...\n");
+	std::cout << "game: spawning wall...\n";
 	for (;y != _floor.rend();y++){
 		for (x = y->begin();x != y->end();x++){
 			if (std::get<2>(*x) == GroundType::NONE)
@@ -225,6 +228,7 @@ void	game::draw_wall()
 			add_wall(*x);
 		}
 	}
+	std::cout << "game: wall spawned\n";
 }
 
 void	game::draw_all()
@@ -234,7 +238,7 @@ void	game::draw_all()
 	irr::scene::IMeshSceneNode *current = nullptr;
 	irr::video::ITexture	*ground = database::load_img("ground");
 
-	printf("game: spawning map...\n");
+	std::cout << "game: spawning map...\n";
 	if (!ground)
 		throw exception("Impossible to load ground");
 	_smgr->clear();
@@ -243,12 +247,12 @@ void	game::draw_all()
 	for (const auto &player : _players)
 		player->spawn();
 	set_camera();
-	printf("game: map spawned\n");
+	std::cout << "game: map spawned\n";
 }
 
 void	game::pause()
 {
-	printf("game: pause\n");
+	std::cout << "game: pause\n";
 	if (_current)
 		_current->pause();
 	break_menu();
@@ -257,7 +261,7 @@ void	game::pause()
 
 void	game::play()
 {
-	printf("game: continue\n");
+	std::cout << "game: continue\n";
 	game_menu();
 	_break = false;
 }
@@ -274,7 +278,7 @@ bool	game::is_break() const
 
 void	game::back_to_main()
 {
-	printf("game: back to the main\n");
+	std::cout << "game: back to the main\n";
 	_smgr->clear();
 	_graphic->setEventReceiver(nullptr);
 	_project->set_interface(new gui(_graphic, _config, _project));
@@ -414,14 +418,20 @@ std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneN
 	return (nullptr);
 }
 
-player	*game::get_player_by_pos(int x, int y)
+std::list<player *>	game::get_player_by_pos(int x, int y)
 {
 	irr::core::position2di	pos;
+	std::list<player *>	result;
 
 	for (auto &elem : _players){
 		pos = elem->get_position();
 		if (pos.X == x && pos.Y == y)
-			return (elem.get());
+			result.push_back(elem.get());
 	}
-	return (nullptr);
+	return (result);
+}
+
+std::list<bomb *>	&game::get_bombs()
+{
+	return (_bombs);
 }

@@ -41,6 +41,8 @@ public:
 
 	void	drop_bomb();
 	void	bomb_available();
+
+	void	dead();
 private:
 	void	play();
 
