@@ -15,7 +15,7 @@
 #include <sstream>
 #include <string>
 
-game::game(irr::IrrlichtDevice *graphic, config *config, project *project) : _graphic(graphic), _config(config),
+game::game(irr::IrrlichtDevice *graphic, config *config, project *project, bool draw) : _graphic(graphic), _config(config),
 _break(false), _current(nullptr), _project(project), _handler(new game_handler(graphic, *this))
 {
 	std::cout << "game: init...\n";
@@ -29,10 +29,11 @@ _break(false), _current(nullptr), _project(project), _handler(new game_handler(g
 		_players.push_back(std::make_unique<player>(this, _graphic, _config));
 		_players.back()->set_position(irr::core::position2di(i % 2 * (_config->TILE_COUNT - 3) + 1, i / 2 * (_config->TILE_COUNT - 3) + 1));
 		_players.back()->set_rotation(i / 2 * 180);
-		_players.back()->spawn();
 	}
 	_current = _players.back().get();
 	game_menu();
+	if (draw)
+		draw_all();
 	_graphic->setEventReceiver(_handler.get());
 	std::cout << "game: initiated\n";
 }
@@ -105,16 +106,15 @@ void	game::run()
 
 void	game::generate_floor()
 {
-	irr::video::ITexture	*ground = database::load_img("ground");
 	irr::video::ITexture	*wall = database::load_img("wall", ".png");
 	std::size_t	y = 0;
 	std::size_t	x = 0;
-	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>	line;
+	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *>>	line;
 
 	printf("game: generating map...\n");
-	if (!ground || !wall)
+	if (!wall)
 		throw exception("Impossible to load image");
-	_config->TILE_SIZE = ground->getSize().Height;
+	_config->TILE_SIZE = wall->getSize().Height;
 	_config->TILE_COUNT = _config->WINDOW_HEIGHT / _config->TILE_SIZE;
 	_config->GAME_AREA = _config->TILE_COUNT * _config->TILE_SIZE;
 	for (int i = 0;i < _config->TILE_COUNT * _config->TILE_COUNT;i += 1){
@@ -125,31 +125,29 @@ void	game::generate_floor()
 			x = 0;
 		}
 		if (x == 0 || y == 0 || x == _config->TILE_COUNT - 1 || y == _config->TILE_COUNT - 1)
-			line.push_back(std::make_tuple(x, y, GroundType::WALL, wall));
+			line.push_back(std::make_tuple(x, y, GroundType::WALL, wall, nullptr));
 		else
-			line.push_back(std::make_tuple(x, y, GroundType::GROUND, ground));
+			line.push_back(std::make_tuple(x, y, GroundType::NONE, nullptr, nullptr));
 		x += 1;
 	}
 	if (line.size() > 0)
 		_floor.push_back(line);
 	//generate_map();
-	draw_wall();
-	set_camera();
 	printf("game: map generated\n");
 }
 
 void 	game::generate_map()
 {
 	irr::video::ITexture	*brick = database::load_img("bric", ".png");
-	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>::iterator	y = _floor.begin();
-	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>::iterator	x;
+	auto	y = _floor.begin();
+	auto	x = y->begin();
 
 	if (!brick)
 		throw exception("Impossible to load image");
 	for (;y != _floor.end();y++){
 		x = y->begin();
 		for (;x != y->end();x++){
-			if (std::get<2>(*x) != GroundType::GROUND)
+			if (std::get<2>(*x) != GroundType::NONE)
 				continue;
 			std::get<2>(*x) = GroundType::BRICK;
 			std::get<3>(*x) = brick;
@@ -168,28 +166,80 @@ void	game::set_camera()
 	printf("game: camera added\n");
 }
 
-void	game::draw_wall()
-{
-	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>::reverse_iterator	y = _floor.rbegin();
-	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>::iterator	x;
-	irr::scene::IMeshSceneNode *current = nullptr;
 
-	printf("game: spawning map...\n");
-	_smgr->clear();
+irr::scene::IMeshSceneNode	*game::add_wall(std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *> &floor)
+{
+	irr::scene::IMeshSceneNode	*current = nullptr;
+
+	if (std::get<2>(floor) == GroundType::NONE)
+		return (nullptr);
+	current =  _smgr->addCubeSceneNode(_config->TILE_SIZE);
+	if (!current)
+		return (nullptr);
+	current->setPosition(irr::core::vector3df(
+		std::get<1>(floor) * _config->TILE_SIZE,
+		_config->TILE_SIZE,
+		std::get<0>(floor) * _config->TILE_SIZE
+	));
+	current->setMaterialTexture(0, std::get<3>(floor));
+	std::get<4>(floor) = current;
+	return (current);
+}
+
+void	game::draw_floor()
+{
+	auto	y = _floor.rbegin();
+	auto	x = y->begin();
+	irr::scene::IMeshSceneNode	*current = nullptr;
+	irr::video::ITexture	*ground = database::load_img("ground");
+
+	printf("game: spawning floor...\n");
+	if (!ground)
+		throw exception("Impossible to load ground");
 	for (;y != _floor.rend();y++){
-		x = y->begin();
-		for (;x != y->end();x++){
+		for (x = y->begin();x != y->end();x++){
 			current = _smgr->addCubeSceneNode(_config->TILE_SIZE);
 			if (!current)
 				continue;
 			current->setPosition(irr::core::vector3df(
 				std::get<1>(*x) * _config->TILE_SIZE,
-				std::get<2>(*x) != GroundType::GROUND ? _config->TILE_SIZE : 0,
+				0,
 				std::get<0>(*x) * _config->TILE_SIZE
 			));
-			current->setMaterialTexture(0, std::get<3>(*x));
+			current->setMaterialTexture(0, ground);
 		}
 	}
+}
+
+void	game::draw_wall()
+{
+	auto	y = _floor.rbegin();
+	auto	x = y->begin();
+	irr::scene::IMeshSceneNode *current = nullptr;
+
+	printf("game: spawning wall...\n");
+	for (;y != _floor.rend();y++){
+		for (x = y->begin();x != y->end();x++){
+			if (std::get<2>(*x) == GroundType::NONE)
+				continue;
+			add_wall(*x);
+		}
+	}
+}
+
+void	game::draw_all()
+{
+	auto	y = _floor.rbegin();
+	auto	x = y->begin();
+	irr::scene::IMeshSceneNode *current = nullptr;
+	irr::video::ITexture	*ground = database::load_img("ground");
+
+	printf("game: spawning map...\n");
+	if (!ground)
+		throw exception("Impossible to load ground");
+	_smgr->clear();
+	draw_floor();
+	draw_wall();
 	for (const auto &player : _players)
 		player->spawn();
 	set_camera();
@@ -242,8 +292,8 @@ const std::string	game::get_text()
 
 void	game::save_map(std::ofstream &file)
 {
-	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>::iterator	y = _floor.begin();
-	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>::iterator	x;
+	auto	y = _floor.begin();
+	auto	x = y->begin();
 	bool	first = true;
 
 	std::cout << "game: saving map...\n";
@@ -264,14 +314,13 @@ void	game::load_map(const std::string &map)
 	std::stringstream	ss;
 	std::string		val;
 	int			value = -1;
-	irr::video::ITexture	*ground = database::load_img("ground");
 	irr::video::ITexture	*wall = database::load_img("wall", ".png");
 	irr::video::ITexture	*bric = database::load_img("bric", ".png");
-	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>::iterator	y = _floor.begin();
-	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>::iterator	x = y->begin();
+	auto	y = _floor.begin();
+	auto	x = y->begin();
 
 	std::cout << "game: loading map...\n";
-	if (!ground || !wall || !bric)
+	if (!wall || !bric)
 		throw exception("Impossible to load image");
 	ss.str(map);
 	while (std::getline(ss, val, ',')){
@@ -280,9 +329,9 @@ void	game::load_map(const std::string &map)
 		if (value == GroundType::WALL){
 			std::get<2>(*x) = GroundType::WALL;
 			std::get<3>(*x) = wall;
-		} else if (value == GroundType::GROUND){
-			std::get<2>(*x) = GroundType::GROUND;
-			std::get<3>(*x) = ground;
+		} else if (value == GroundType::NONE){
+			std::get<2>(*x) = GroundType::NONE;
+			std::get<3>(*x) = nullptr;
 		} else if (value == GroundType::BRICK){
 			std::get<2>(*x) = GroundType::BRICK;
 			std::get<3>(*x) = bric;
@@ -296,7 +345,7 @@ void	game::load_map(const std::string &map)
 		}
 
 	}
-	draw_wall();
+	draw_all();
 	std::cout << "game: map loaded\n";
 }
 
@@ -354,7 +403,7 @@ void	game::load_game(const std::string &filename)
 	std::cout << "game: loaded\n";
 }
 
-std::tuple<int, int, GroundType, irr::video::ITexture *>	*game::get_floor(int x, int y)
+std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *>	*game::get_floor(int x, int y)
 {
 	for (auto &elem : _floor){
 		for (auto &floor : elem){

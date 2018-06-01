@@ -27,9 +27,10 @@ public:
 	void	run();
 private:
 	void	explode();
+	void	change_to_fire(std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *> *floor);
 	void	kill();
 
-	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *> *>	_fires;
+	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *> *>	_fires;
 
 	irr::scene::ISceneNode	*_design;
 	player			*_parent;

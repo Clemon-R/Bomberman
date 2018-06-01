@@ -83,7 +83,7 @@ void	gui::load_game(const std::string &filename)
 	game	*current = nullptr;
 
 	_graphic->setEventReceiver(nullptr);
-	current = new game(_graphic, _config, _project);
+	current = new game(_graphic, _config, _project, false);
 	if (!current)
 		return;
 	current->load_game(filename);

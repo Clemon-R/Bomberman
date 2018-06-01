@@ -25,7 +25,7 @@ class	game_handler;
 class	game : public interface
 {
 public:
-	game(irr::IrrlichtDevice *graphic, config *config, project *project);
+	game(irr::IrrlichtDevice *graphic, config *config, project *project, bool draw = true);
 	~game();
 
 	player	*get_player();
@@ -49,10 +49,14 @@ public:
 
 	void	set_camera();
 
-	std::tuple<int, int, GroundType, irr::video::ITexture *>	*get_floor(int x, int y);
+	std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *>	*get_floor(int x, int y);
 	player	*get_player_by_pos(int x, int y);
-	void	draw_wall();
+	void	draw_all();
+	irr::scene::IMeshSceneNode	*add_wall(std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *> &floor);
 private:
+	void	draw_floor();
+	void	draw_wall();
+
 	void	generate_floor();
 	void	generate_map();
 
@@ -63,7 +67,7 @@ private:
 
 	player	*_current;
 	std::list<std::unique_ptr<player>>	_players;
-	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>	_floor;
+	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *>>>	_floor;
 
 	irr::IrrlichtDevice	*_graphic;
 	irr::video::IVideoDriver	*_driver;

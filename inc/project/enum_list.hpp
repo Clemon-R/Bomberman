@@ -10,9 +10,9 @@
 
 enum	GroundType
 {
+	NONE,
 	WALL,
 	FIRE,
-	GROUND,
 	BRICK
 };
 

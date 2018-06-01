@@ -35,10 +35,8 @@ bomb::~bomb()
 	for (auto &fire : _fires){
 		if (!ground)
 			continue;
-		std::get<2>(*fire) = GroundType::GROUND;
-		std::get<3>(*fire) = ground;
+		std::get<4>(*fire)->remove();
 	}
-	_parent->get_parent()->draw_wall();
 	std::cout << "bomb: destoyed\n";
 }
 
@@ -69,36 +67,41 @@ void	bomb::kill()
 
 }
 
+void	bomb::change_to_fire(std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *> *floor)
+{
+	irr::video::ITexture	*fire = database::load_img("fire", ".png");
+
+	if (!floor || std::get<2>(*floor) == GroundType::WALL)
+		return;
+	if (!fire)
+		throw exception("Impossible to load fire");
+	std::get<3>(*floor) = fire;
+	std::get<2>(*floor) = GroundType::FIRE;
+	if (std::get<4>(*floor))
+		std::get<4>(*floor)->setMaterialTexture(0, std::get<3>(*floor));
+	else
+		_parent->get_parent()->add_wall(*floor);
+	_fires.push_back(floor);
+}
+
 void	bomb::explode()
 {
 	irr::core::position2di	pos = utils::convert_vector(_design->getPosition(), *_config);
-	std::tuple<int, int, GroundType, irr::video::ITexture *>	*ground = nullptr;
-	irr::video::ITexture	*fire = database::load_img("fire", ".png");
+	std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *>	*ground = nullptr;
 
 	std::cout << "bomb: exploding...\n";
 	if (_design)
 		_design->remove();
-	if (!fire)
-		throw exception("Impossible to load fire");
 	_exploded = true;
 	for (int i = 0;i < 4;i += 1){
 		pos.X += i % 2 - 2 * (i == 3);
 		pos.Y += (i + 1) % 2 - 2 * (i == 2);
 		ground = _parent->get_parent()->get_floor(pos.X, pos.Y);
-		if (ground && std::get<2>(*ground) >= GroundType::GROUND){
-			std::get<3>(*ground) = fire;
-			std::get<2>(*ground) = GroundType::FIRE;
-			_fires.push_back(ground);
-		}
+		change_to_fire(ground);
 		pos.X -= i % 2 - 2 * (i == 3);
 		pos.Y -= (i + 1) % 2 - 2 * (i == 2);
 	}
 	ground = _parent->get_parent()->get_floor(pos.X, pos.Y);
-	if (ground && std::get<2>(*ground) >= GroundType::GROUND){
-		std::get<3>(*ground) = fire;
-		std::get<2>(*ground) = GroundType::FIRE;
-		_fires.push_back(ground);
-	}
-	_parent->get_parent()->draw_wall();
+	change_to_fire(ground);
 	std::cout << "bomb: exploded\n";
 }
