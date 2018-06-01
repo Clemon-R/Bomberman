@@ -16,17 +16,11 @@ class	project;
 	#include "project/project.hpp"
 class	game_handler;
 	#include "project/game/game_handler.hpp"
+	#include "project/enum_list.hpp"
 	#include <iostream>
 	#include <list>
 	#include <tuple>
 	#include <memory>
-
-enum	GroundType
-{
-	WALL,
-	GROUND,
-	BRICK
-};
 
 class	game : public interface
 {
@@ -54,9 +48,12 @@ public:
 	void	load_game(const std::string &filename);
 
 	void	set_camera();
+
+	std::tuple<int, int, GroundType, irr::video::ITexture *>	*get_floor(int x, int y);
+	player	*get_player_by_pos(int x, int y);
+	void	draw_wall();
 private:
 	void	generate_floor();
-	void	draw_wall();
 	void	generate_map();
 
 	void	dispatch_load(const std::string &param, const std::string &arg);

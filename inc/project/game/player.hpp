@@ -12,12 +12,14 @@
 	#include "project/config.hpp"
 class	bomb;
 	#include "project/game/bomb.hpp"
+class	game;
+	#include "project/game/game.hpp"
 	#include <iostream>
 
 class	player
 {
 public:
-	player(irr::IrrlichtDevice *graphic, config *config);
+	player(game *parent, irr::IrrlichtDevice *graphic, config *config);
 	~player();
 
 	void	refresh();
@@ -29,6 +31,7 @@ public:
 	irr::core::position2di	get_position() const;
 	void	set_position(const irr::core::position2di &pos);
 	irr::core::position2di	get_real_position() const;
+	game	*get_parent() const;
 
 	void	save_player(std::ofstream &file);
 	void	load_player(const std::string &param, const std::string &arg);
@@ -46,6 +49,7 @@ private:
 
 	bool	_break;
 	irr::core::vector3df			_target;
+	irr::core::vector3df			_last;
 	bomb					*_bomb;
 	config					*_config;
 	irr::IrrlichtDevice			*_graphic;
@@ -53,5 +57,6 @@ private:
 	irr::scene::ISceneManager		*_smgr;
 
 	irr::scene::IAnimatedMeshSceneNode	*_design;
+	game					*_parent;
 };
 #endif /* !PLAYER_HPP_ */

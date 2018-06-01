@@ -26,7 +26,7 @@ _break(false), _current(nullptr), _project(project), _handler(new game_handler(g
 		throw exception("Impossible to find the driver");
 	generate_floor();
 	for (int i = 0;i < 4;i += 1){
-		_players.push_back(std::make_unique<player>(_graphic, _config));
+		_players.push_back(std::make_unique<player>(this, _graphic, _config));
 		_players.back()->set_position(irr::core::position2di(i % 2 * (_config->TILE_COUNT - 3) + 1, i / 2 * (_config->TILE_COUNT - 3) + 1));
 		_players.back()->set_rotation(i / 2 * 180);
 		_players.back()->spawn();
@@ -175,6 +175,7 @@ void	game::draw_wall()
 	irr::scene::IMeshSceneNode *current = nullptr;
 
 	printf("game: spawning map...\n");
+	_smgr->clear();
 	for (;y != _floor.rend();y++){
 		x = y->begin();
 		for (;x != y->end();x++){
@@ -189,6 +190,9 @@ void	game::draw_wall()
 			current->setMaterialTexture(0, std::get<3>(*x));
 		}
 	}
+	for (const auto &player : _players)
+		player->spawn();
+	set_camera();
 	printf("game: map spawned\n");
 }
 
@@ -293,10 +297,6 @@ void	game::load_map(const std::string &map)
 
 	}
 	draw_wall();
-	for (const auto &player : _players)
-		player->spawn();
-	if (_current)
-		_current->spawn();
 	std::cout << "game: map loaded\n";
 }
 
@@ -335,7 +335,6 @@ void	game::load_game(const std::string &filename)
 	file.open(filename);
 	if (!file.is_open())
 		throw exception("Impossible to load the save");
-	_smgr->clear();
 	while (std::getline(file, line)){
 		try{
 			pos = line.find('=');
@@ -352,6 +351,28 @@ void	game::load_game(const std::string &filename)
 		}
 	}
 	file.close();
-	set_camera();
 	std::cout << "game: loaded\n";
+}
+
+std::tuple<int, int, GroundType, irr::video::ITexture *>	*game::get_floor(int x, int y)
+{
+	for (auto &elem : _floor){
+		for (auto &floor : elem){
+			if (std::get<0>(floor) == x && std::get<1>(floor) == y)
+				return (&floor);
+		}
+	}
+	return (nullptr);
+}
+
+player	*game::get_player_by_pos(int x, int y)
+{
+	irr::core::position2di	pos;
+
+	for (auto &elem : _players){
+		pos = elem->get_position();
+		if (pos.X == x && pos.Y == y)
+			return (elem.get());
+	}
+	return (nullptr);
 }

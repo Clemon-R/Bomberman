@@ -11,8 +11,8 @@
 #include "project/utils.hpp"
 #include <fstream>
 
-player::player(irr::IrrlichtDevice *graphic, config *config) : _graphic(graphic), _config(config),
-_anim(irr::scene::EMAT_STAND), _rotate(0, 0, 0), _break(false), _design(nullptr), _bomb(nullptr)
+player::player(game *parent, irr::IrrlichtDevice *graphic, config *config) : _graphic(graphic), _config(config),
+_anim(irr::scene::EMAT_STAND), _rotate(0, 0, 0), _break(false), _design(nullptr), _bomb(nullptr), _parent(parent)
 {
 	std::size_t	mid = _config->GAME_AREA / 2;
 
@@ -22,6 +22,7 @@ _anim(irr::scene::EMAT_STAND), _rotate(0, 0, 0), _break(false), _design(nullptr)
 	if (!_driver || !_smgr)
 		throw exception("Impossible to find the driver");
 	_target = irr::core::vector3df(mid, _config->TILE_SIZE, mid);
+	_last = _target;
 	std::cout << "player: initiated\n";
 }
 
@@ -35,6 +36,7 @@ void	player::spawn()
 {
 	irr::scene::IAnimatedMesh	*mesh = nullptr;
 	float	size = 0.5f * _config->GAME_SCALE;
+	irr::core::vector3df	old = _target;
 
 	mesh = _smgr->getMesh("ressources/skin/sydney.md2");
 	if (!mesh)
@@ -46,8 +48,11 @@ void	player::spawn()
 	_design->setMaterialFlag(irr::video::EMF_LIGHTING, false);
 	_design->setMD2Animation(_anim);
 	_design->setRotation(_rotate);
-	_design->setPosition(_target);
+	_design->setPosition(_last);
 	_design->setScale(irr::core::vector3df(size, size, size));
+	_target = _last;
+	if (_last.X != _target.X || _last.Z != _target.Z)
+		move_to(utils::convert_vector(old, *_config));
 }
 
 void	player::refresh()
@@ -56,7 +61,9 @@ void	player::refresh()
 		play();
 		_break = false;
 	}
-	if (_anim == irr::scene::EMAT_RUN && _design->getPosition().X == _target.X && _design->getPosition().Z == _target.Z){
+	if (_design)
+		_last = _design->getPosition();
+	if (_anim == irr::scene::EMAT_RUN && _last.X == _target.X && _last.Z == _target.Z){
 		_anim = irr::scene::EMAT_STAND;
 		_design->setMD2Animation(_anim);
 		_design->setRotation(_rotate);
@@ -90,7 +97,7 @@ void	player::move_to(const irr::core::position2di &pos)
 		delay = (player.Y - pos.Y) * 100;
 		_rotate = irr::core::vector3df(0, delay < 0 ? 0 : 180, 0);
 	}
-	_target = irr::core::vector3df(static_cast<float>(pos.Y) * _config->TILE_SIZE, _design->getPosition().Y, static_cast<float>(pos.X) * _config->TILE_SIZE);
+	_target = utils::convert_position(pos, *_config);
 	anim = _smgr->createFlyStraightAnimator(_design->getPosition(), _target, delay < 0 ? delay * -1 : delay);
 	if (anim){
 		_design->addAnimator(anim);
@@ -160,6 +167,7 @@ void	player::load_player(const std::string &param, const std::string &arg)
 void	player::set_position(const irr::core::position2di &pos)
 {
 	_target = utils::convert_position(pos, *_config);
+	_last = _target;
 	if (_design)
 		_design->setPosition(_target);
 }
@@ -175,4 +183,9 @@ void	player::drop_bomb()
 {
 	if (!_bomb)
 		_bomb = new bomb(this, _graphic, _config);
+}
+
+game	*player::get_parent() const
+{
+	return (_parent);
 }
