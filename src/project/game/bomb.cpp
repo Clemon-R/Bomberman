@@ -103,7 +103,6 @@ void	bomb::change_to_fire(std::tuple<int, int, GroundType, irr::video::ITexture 
 		throw exception("Impossible to load fire");
 	std::get<3>(*floor) = fire;
 	std::get<2>(*floor) = GroundType::FIRE;
-	std::cout << "test";
 	if (std::get<4>(*floor))
 		std::get<4>(*floor)->remove();
 	_parent->get_parent()->add_wall(*floor);

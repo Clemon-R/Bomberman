@@ -14,7 +14,10 @@ class	bomb;
 	#include "project/game/bomb.hpp"
 class	game;
 	#include "project/game/game.hpp"
+class	ia;
+	#include "project/game/ia.hpp"
 	#include <iostream>
+	#include <memory>
 
 class	player
 {
@@ -46,6 +49,8 @@ public:
 
 	void	set_camera();
 	bool	is_alive() const;
+	ia	*get_ia();
+	void	set_ia();
 private:
 	void	play();
 
@@ -53,6 +58,7 @@ private:
 	bomb		*_bomb;
 	bool		_break;
 	bool		_alive;
+	std::unique_ptr<ia>	_ia;
 
 	irr::core::vector3df			_target;
 	irr::core::vector3df			_last;

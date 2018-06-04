@@ -13,7 +13,7 @@
 
 player::player(std::size_t id, game *parent, irr::IrrlichtDevice *graphic, config *config) : _graphic(graphic), _config(config),
 _anim(irr::scene::EMAT_STAND), _rotate(0, 0, 0), _break(false), _design(nullptr), _bomb(nullptr), _parent(parent), _id(id), _alive(true),
-_camera(nullptr)
+_camera(nullptr), _ia(nullptr)
 {
 	std::size_t	mid = _config->GAME_AREA / 2;
 
@@ -77,6 +77,8 @@ void	player::refresh()
 		play();
 		_break = false;
 	}
+	if (_ia)
+		_ia->run();
 	_last = _design->getPosition();
 	if (_camera){
 		_camera->setPosition(irr::core::vector3df(_last.X - _config->TILE_SIZE * 4, _config->TILE_SIZE * 4, _last.Z));
@@ -173,6 +175,7 @@ void	player::save_player(std::ofstream &file)
 	file << "P" << _id << "_POS=";
 	file << pos.X << "," << pos.Y << std::endl;
 	file << "P" << _id << "_ALIVE=" << (_alive ? "1" : "0") << std::endl;
+	file << "P" << _id << "_IA=" << (_ia ? "1" : "0") << std::endl;
 	std::cout << "player: saved\n";
 }
 
@@ -187,6 +190,8 @@ void	player::load_player(const std::string &param, const std::string &arg)
 		set_position(irr::core::position2di(std::atoi(arg.substr(0, pos).c_str()), std::atoi(arg.substr(pos + 1).c_str())));
 	} else if (param.compare("ALIVE") == 0 && arg.compare("0") == 0)
 		_alive = false;
+	else if (param.compare("IA") == 0 && arg.compare("0") == 0)
+		_ia.reset(nullptr);
 }
 
 void	player::set_position(const irr::core::position2di &pos)
@@ -235,4 +240,14 @@ void	player::set_camera()
 bool	player::is_alive() const
 {
 	return (_alive);
+}
+
+void	player::set_ia()
+{
+	_ia.reset(new ia(this));
+}
+
+ia	*player::get_ia()
+{
+	return (_ia.get());
 }
