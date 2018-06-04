@@ -32,6 +32,8 @@ bomb::~bomb()
 	std::cout << "bomb: destroying...\n";
 	for (auto &fire : _fires){
 		std::get<4>(*fire)->remove();
+		std::get<2>(*fire) = GroundType::NONE;
+		std::get<3>(*fire) = nullptr;
 		std::get<4>(*fire) = nullptr;
 	}
 	std::cout << "bomb: destoyed\n";

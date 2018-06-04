@@ -11,8 +11,8 @@
 enum	GroundType
 {
 	NONE,
-	WALL,
 	FIRE,
+	WALL,
 	BRICK
 };
 

@@ -84,7 +84,6 @@ void	player::bomb_available()
 {
 	if (!_bomb)
 		return;
-	//_parent->get_bombs().remove(_bomb);
 	_bomb = nullptr;
 }
 

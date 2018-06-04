@@ -23,6 +23,8 @@ class	game_handler;
 	#include <tuple>
 	#include <memory>
 
+using	TYPE_FLOOR = std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *>;
+
 class	game : public interface
 {
 public:
@@ -50,12 +52,13 @@ public:
 
 	void	set_camera();
 
-	std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *>	*get_floor(int x, int y);
+	TYPE_FLOOR	*get_floor(int x, int y);
+	std::list<std::list<TYPE_FLOOR>>	&get_floors();
 	std::list<bomb *>	&get_bombs();
 	std::list<player *>	get_player_by_pos(int x, int y);
 
 	void	draw_all();
-	irr::scene::IMeshSceneNode	*add_wall(std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *> &floor);
+	irr::scene::IMeshSceneNode	*add_wall(TYPE_FLOOR &floor);
 private:
 	void	full_corner_remove();
 	void	corner_remove();
@@ -74,7 +77,7 @@ private:
 	player	*_current;
 	std::list<std::unique_ptr<player>>	_players;
 	std::list<bomb *>			_bombs;
-	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *>>>	_floor;
+	std::list<std::list<TYPE_FLOOR>>	_floor;
 
 	irr::IrrlichtDevice	*_graphic;
 	irr::video::IVideoDriver	*_driver;
