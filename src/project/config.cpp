@@ -11,6 +11,7 @@ void	config::refresh_config()
 {
 	GAME_SCALE = std::atoi(SCALE.c_str());
 
+	std::cout << "config: refresh size with scale...\n";
 	switch (GAME_SCALE){
 		default:
 		case 1:

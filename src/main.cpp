@@ -27,5 +27,6 @@ int	main(int argc, char **argv)
 		std::cerr << error.what() << std::endl;
 		return (84);
 	}
+	std::cout << "main: end of the program\n";
 	return (0);
 }

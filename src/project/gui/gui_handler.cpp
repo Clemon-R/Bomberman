@@ -28,6 +28,7 @@ bool	gui_handler::window_handler(const irr::SEvent& event)
 {
 	irr::s32	caller = event.GUIEvent.Caller->getID();
 
+	std::cout << "gui_handler: new action\n";
 	switch (caller){
 		case CodeEventGui::EXIT:
 			_graphic->closeDevice();

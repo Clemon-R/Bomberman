@@ -65,5 +65,6 @@ config	*saver::load_config()
 	while (getline(file, line))
 		saver::load_line_config(line, *file_config);
 	file.close();
+	std::cout << "saver: config loaded\n";
 	return (file_config);
 }

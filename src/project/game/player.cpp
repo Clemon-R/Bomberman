@@ -47,7 +47,7 @@ void	player::dead()
 void	player::spawn()
 {
 	irr::scene::IAnimatedMesh	*mesh = nullptr;
-	float	size = 0.3f * _config->GAME_SCALE;
+	float			size = 0.3f * _config->GAME_SCALE;
 	irr::core::vector3df	old = _target;
 
 	if (!_alive)
@@ -64,19 +64,17 @@ void	player::spawn()
 	_design->setRotation(_rotate);
 	_design->setPosition(_last);
 	_design->setScale(irr::core::vector3df(size, size, size));
-	_target = _last;
 	if (_last.X != _target.X || _last.Z != _target.Z)
 		move_to(utils::convert_vector(old, *_config));
 }
 
 void	player::refresh()
 {
+	if (_break)
+		play();
+	_break = false;
 	if (!_design)
 		return;
-	else if (_break){
-		play();
-		_break = false;
-	}
 	if (_ia)
 		_ia->run();
 	_last = _design->getPosition();
@@ -144,6 +142,7 @@ void	player::stop()
 {
 	if (!_design)
 		return;
+	std::cout << "player: stop the movement\n";
 	_design->removeAnimators();
 	_design->setMD2Animation(irr::scene::EMAT_STAND);
 	_target = _design->getPosition();
@@ -151,6 +150,7 @@ void	player::stop()
 
 void	player::pause()
 {
+	std::cout << "player: pause\n";
 	_break = true;
 	if (!_design)
 		return;
@@ -185,7 +185,7 @@ void	player::load_player(const std::string &param, const std::string &arg)
 {
 	std::size_t	pos;
 
-	std::cout << "player: new param - " << param << "\n";
+	std::cout << "player: loading param - " << param << "\n";
 	if (param.compare("POS") == 0){
 		if ((pos = arg.find(',')) == std::string::npos)
 			return;
@@ -216,6 +216,7 @@ void	player::drop_bomb()
 {
 	if (_bomb)
 		return;
+	std::cout << "player: dropping a bomb\n";
 	_bomb = new bomb(this, _graphic, _config);
 	_parent->get_bombs().push_back(_bomb);
 }
@@ -234,6 +235,7 @@ void	player::set_camera()
 {
 	if (_camera)
 		return;
+	std::cout << "player: adding a camera\n";
 	_camera = _smgr->addCameraSceneNode();
 	_camera->setPosition(irr::core::vector3df(_last.X - _config->TILE_SIZE * 4, _config->TILE_SIZE * 4, _last.Z));
 	_camera->setTarget(_last);
