@@ -46,13 +46,15 @@ void	gui::main_menu()
 	irr::video::ITexture	*img = database::load_img("btn_exit", ".png");
 	irr::video::ITexture	*img1 = database::load_img("btn_play", ".png");
 	irr::video::ITexture	*img2 = database::load_img("btn_load", ".png");
+	irr::video::ITexture	*img3 = database::load_img("btn_multiplayer", ".png");
 
-	if (!img || !img1 || !img2)
+	if (!img || !img1 || !img2 || !img3)
 		throw exception("Impossible to load image");
 	_env->clear();
-	utils::add_button(_env, img, irr::core::position2di((_config->WINDOW_WIDTH - img->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 + img->getSize().Height * 2), CodeEventGui::EXIT);
 	utils::add_button(_env, img1, irr::core::position2di((_config->WINDOW_WIDTH - img1->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 - img1->getSize().Height), CodeEventGui::PLAY);
-	utils::add_button(_env, img2, irr::core::position2di((_config->WINDOW_WIDTH - img2->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 + img2->getSize().Height / 2), CodeEventGui::LOAD);
+	utils::add_button(_env, img3, irr::core::position2di((_config->WINDOW_WIDTH - img3->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 + img3->getSize().Height / 2), CodeEventGui::MULTIPLAYER);
+	utils::add_button(_env, img2, irr::core::position2di((_config->WINDOW_WIDTH - img2->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 + img2->getSize().Height * 2), CodeEventGui::LOAD);
+	utils::add_button(_env, img, irr::core::position2di((_config->WINDOW_WIDTH - img->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 + img->getSize().Height * 3.5), CodeEventGui::EXIT);
 	_graphic->setEventReceiver(_handler.get());
 }
 
