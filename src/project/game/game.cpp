@@ -227,13 +227,14 @@ void     game::generate_map()
 
 void	game::set_camera()
 {
-	irr::scene::ICameraSceneNode	*cam = _smgr->addCameraSceneNode();
 	std::size_t			mid = _config->GAME_AREA / 2;
 
 	std::cout << "game: adding the camera...\n";
-	cam->setPosition(irr::core::vector3df(mid - _config->TILE_SIZE / 2, _config->GAME_AREA * 0.74, mid));
-	//cam->setPosition(irr::core::vector3df(mid / 2, _config->GAME_AREA * 0.74, mid));
-	cam->setTarget(irr::core::vector3df(mid - _config->TILE_SIZE / 2, 0, mid));
+	_camera = _smgr->addCameraSceneNode();
+	if (!_camera)
+		return;
+	_camera->setPosition(irr::core::vector3df(mid - _config->TILE_SIZE / 2, _config->GAME_AREA * 0.74, mid));
+	_camera->setTarget(irr::core::vector3df(mid - _config->TILE_SIZE / 2, 0, mid));
 	std::cout << "game: camera added\n";
 }
 
