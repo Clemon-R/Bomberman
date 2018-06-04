@@ -19,6 +19,7 @@ game::game(irr::IrrlichtDevice *graphic, config *config, project *project, bool 
 _break(false), _current(nullptr), _project(project), _handler(new game_handler(graphic, *this))
 {
 	std::cout << "game: init...\n";
+	_server = new server();
 	_driver = _graphic->getVideoDriver();
 	_env = _graphic->getGUIEnvironment();
     	_smgr = _graphic->getSceneManager();

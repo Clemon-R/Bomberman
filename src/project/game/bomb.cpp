@@ -53,7 +53,6 @@ bool	bomb::run()
 	else if (_exploded){
 		kill();
 		if (utils::get_milliseconds() - _start >= 3000){
-			remove_brick();
 			_parent->bomb_available();
 			delete this;
 			return (false);
@@ -66,44 +65,6 @@ void	bomb::kill_by_list(std::list<player *> &list)
 {
 	for (auto &elem : list)
 		elem->dead();
-}
-
-void	bomb::remove_brick()
-{
-	std::cout << "A" << std::endl;
-	irr::scene::ISceneNode	*current = nullptr;
-	std::cout << "B" << std::endl;
-	irr::core::position2di	pos = utils::convert_vector(_design->getPosition(), *_config);
-	std::cout << "C" << std::endl;
-	// std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>::reverse_iterator	y = _game_parent->get_floor().rbegin();
-	// std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>::iterator	x;
-
-	std::cout << "bomb: removing brick..." << std::endl;
-	for (int i = 0; i < 4; i += 1){
-		// for (;y != _game_parent->get_floor().rend();y++){
-		// 	x = y->begin();
-		// 	for (;x != y->end();x++){
-		// 		std::cout << "get0:" << std::get<0>(*x) << std::endl;
-		// 		std::cout << "get1:" << std::get<1>(*x) << std::endl;
-		// 		std::cout << "get2:" << std::get<2>(*x) << std::endl;
-		// 	}
-		// }
-		current = _smgr->addCubeSceneNode(_config->TILE_SIZE);
-		if (!current)
-			throw exception("Impossible to add cube");
-		current->setMaterialTexture(0, database::load_img("ground"));
-		pos.X += i % 2 - 2 * (i == 3);
-		pos.Y += (i + 1) % 2 - 2 * (i == 2);
-		current->setPosition(utils::convert_position(pos, *_config));
-		pos.X -= i % 2 - 2 * (i == 3);
-		pos.Y -= (i + 1) % 2 - 2 * (i == 2);
-	}
-	current = _smgr->addCubeSceneNode(_config->TILE_SIZE);
-	if (!current)
-		throw exception("Impossible to add cube");
-	current->setMaterialTexture(0, database::load_img("ground"));
-	current->setPosition(utils::convert_position(pos, *_config));
-	std::cout << "bomb: brick removed" << std::endl;
 }
 
 void	bomb::kill()

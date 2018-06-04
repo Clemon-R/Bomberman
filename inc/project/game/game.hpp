@@ -17,6 +17,7 @@ class	project;
 class	game_handler;
 	#include "project/game/game_handler.hpp"
 	#include "project/game/bomb.hpp"
+	#include "project/game/server.hpp"
 	#include "project/enum_list.hpp"
 	#include <iostream>
 	#include <list>
@@ -85,5 +86,6 @@ private:
 	bool			_break;
 	project	*_project;
 	irr::gui::IGUIEditBox	*_text;
+	server			*_server;
 };
 #endif /* !GAME_HPP_ */

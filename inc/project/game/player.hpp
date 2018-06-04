@@ -65,6 +65,5 @@ private:
 	irr::scene::ISceneManager		*_smgr;
 
 	irr::scene::IAnimatedMeshSceneNode	*_design;
-	game					*_parent;
 };
 #endif /* !PLAYER_HPP_ */

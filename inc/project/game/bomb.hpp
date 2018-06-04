@@ -20,7 +20,7 @@ class	player;
 class	bomb
 {
 public:
-	bomb(game *game_parent, player *parent, irr::IrrlichtDevice *graphic, config *config);
+	bomb(player *parent, irr::IrrlichtDevice *graphic, config *config);
 	~bomb();
 
 	void	spawn();
