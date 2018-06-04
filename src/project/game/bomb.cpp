@@ -41,11 +41,18 @@ bomb::~bomb()
 
 void	bomb::spawn()
 {
-	_design = _smgr->addCubeSceneNode(_config->TILE_SIZE);
-	if (!_design)
-		throw exception("Impossible to add cube");
-	_design->setMaterialTexture(0, database::load_img("tnt", ".png"));
-	_design->setPosition(utils::convert_position(_parent->get_position(), *_config));
+	TYPE_FLOOR	*ground = _parent->get_parent()->get_floor(_parent->get_position().X, _parent->get_position().Y);
+	irr::video::ITexture	*tnt = database::load_img("tnt", ".png");
+
+	if (!ground)
+		return;
+	if (!tnt)
+		throw exception("Impossible to load tnt");
+	std::get<3>(*ground) = tnt;
+	std::get<2>(*ground) = GroundType::TNT;
+	if (std::get<4>(*ground))
+		std::get<4>(*ground)->remove();
+	_design = _parent->get_parent()->add_wall(*ground);
 }
 
 bool	bomb::run()
@@ -96,21 +103,19 @@ void	bomb::change_to_fire(std::tuple<int, int, GroundType, irr::video::ITexture 
 		throw exception("Impossible to load fire");
 	std::get<3>(*floor) = fire;
 	std::get<2>(*floor) = GroundType::FIRE;
+	std::cout << "test";
 	if (std::get<4>(*floor))
-		std::get<4>(*floor)->setMaterialTexture(0, std::get<3>(*floor));
-	else
-		_parent->get_parent()->add_wall(*floor);
+		std::get<4>(*floor)->remove();
+	_parent->get_parent()->add_wall(*floor);
 	_fires.push_back(floor);
 }
 
 void	bomb::explode()
 {
 	irr::core::position2di	pos = utils::convert_vector(_design->getPosition(), *_config);
-	std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *>	*ground = nullptr;
+	TYPE_FLOOR	*ground = nullptr;
 
 	std::cout << "bomb: exploding...\n";
-	if (_design)
-		_design->remove();
 	_exploded = true;
 	for (int i = 0;i < 4;i += 1){
 		pos.X += i % 2 - 2 * (i == 3);

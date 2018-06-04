@@ -13,7 +13,8 @@ enum	GroundType
 	NONE,
 	FIRE,
 	WALL,
-	BRICK
+	BRICK,
+	TNT
 };
 
 enum	CodeEventGui

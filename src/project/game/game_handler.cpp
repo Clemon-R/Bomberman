@@ -94,19 +94,19 @@ bool	game_handler::move_handler(int key)
 	switch (key){
 		case irr::KEY_DOWN:
 		case irr::KEY_UP:
-		while (std::get<2>(*x) <= GroundType::FIRE){
+		do {
 			tmp = x;
 			x = target->get_parent()->get_floor(target->get_position().X, std::get<1>(*x) + (key == irr::KEY_UP ? 1 : -1));
-		}
+		} while (std::get<2>(*x) <= GroundType::FIRE);
 		target->move_to(irr::core::position2di(target->get_position().X, std::get<1>(*tmp)));
 		break;
 
 		case irr::KEY_LEFT:
 		case irr::KEY_RIGHT:
-		while (std::get<2>(*x) <= GroundType::FIRE){
+		do {
 			tmp = x;
 			x = target->get_parent()->get_floor(std::get<0>(*x) + (key == irr::KEY_LEFT ? 1 : -1), std::get<1>(*x));
-		}
+		} while (std::get<2>(*x) <= GroundType::FIRE);
 		target->move_to(irr::core::position2di(std::get<0>(*tmp), target->get_position().Y));
 		break;
 		
