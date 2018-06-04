@@ -75,18 +75,19 @@ private:
 	void	load_map(const std::string &map);
 
 	player	*_current;
+	bool	_break;
 	std::list<std::unique_ptr<player>>	_players;
 	std::list<bomb *>			_bombs;
 	std::list<std::list<TYPE_FLOOR>>	_floor;
+	irr::scene::ICameraSceneNode		*_camera;
 
-	irr::IrrlichtDevice	*_graphic;
+	irr::IrrlichtDevice		*_graphic;
 	irr::video::IVideoDriver	*_driver;
 	irr::gui::IGUIEnvironment	*_env;
 	irr::scene::ISceneManager	*_smgr;
 	std::unique_ptr<game_handler>	_handler;
-	config			*_config;
-	bool			_break;
-	project	*_project;
-	irr::gui::IGUIEditBox	*_text;
+	config				*_config;
+	project				*_project;
+	irr::gui::IGUIEditBox		*_text;
 };
 #endif /* !GAME_HPP_ */

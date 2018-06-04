@@ -19,46 +19,54 @@ class	game;
 class	player
 {
 public:
-	player(game *parent, irr::IrrlichtDevice *graphic, config *config);
+	player(std::size_t id, game *parent, irr::IrrlichtDevice *graphic, config *config);
 	~player();
 
 	void	refresh();
 	void	pause();
+	void	stop();
 
 	void	move_to(const irr::core::position2di &pos);
-	void	stop();
 
 	irr::core::position2di	get_position() const;
 	void	set_position(const irr::core::position2di &pos);
 	irr::core::position2di	get_real_position() const;
 	game	*get_parent() const;
+	void	set_rotation(const std::size_t dir);
+	const std::size_t	get_id() const;
 
 	void	save_player(std::ofstream &file);
 	void	load_player(const std::string &param, const std::string &arg);
 
 	void	spawn();
-	void	set_rotation(const std::size_t dir);
+	void	dead();
 
 	void	drop_bomb();
 	void	bomb_available();
 
-	void	dead();
+	void	set_camera();
+	bool	is_alive() const;
 private:
 	void	play();
 
-	irr::core::vector3df	_rotate;
-	irr::scene::EMD2_ANIMATION_TYPE	_anim;
+	std::size_t	_id;
+	bomb		*_bomb;
+	bool		_break;
+	bool		_alive;
 
-	bool	_break;
 	irr::core::vector3df			_target;
 	irr::core::vector3df			_last;
-	bomb					*_bomb;
+
 	config					*_config;
 	irr::IrrlichtDevice			*_graphic;
 	irr::video::IVideoDriver		*_driver;
 	irr::scene::ISceneManager		*_smgr;
 
 	irr::scene::IAnimatedMeshSceneNode	*_design;
+	irr::core::vector3df			_rotate;
+	irr::scene::EMD2_ANIMATION_TYPE		_anim;
+	irr::scene::ICameraSceneNode		*_camera;
+
 	game					*_parent;
 };
 #endif /* !PLAYER_HPP_ */
