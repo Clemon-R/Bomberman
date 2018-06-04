@@ -68,10 +68,21 @@ void	gui::load_menu()
 		throw exception("Impossible to load image");
 	x = (_config->WINDOW_WIDTH - img1->getSize().Width) / 2;
 	_env->clear();
-	_graphic->setEventReceiver(_handler.get());
 	_text = _env->addEditBox(L"", irr::core::recti(x, _config->WINDOW_HEIGHT / 2 - img1->getSize().Height, x + img->getSize().Width, _config->WINDOW_HEIGHT / 2));
 	utils::add_button(_env, img, irr::core::position2di(x, _config->WINDOW_HEIGHT / 2 + img->getSize().Height / 2), CodeEventGui::CHARGE);
 	utils::add_button(_env, img1, irr::core::position2di(x, _config->WINDOW_HEIGHT / 2 + img1->getSize().Height * 2), CodeEventGui::BACK);
+}
+
+void	gui::multiplayer_menu()
+{
+	irr::video::ITexture	*img1 = database::load_img("btn_back", ".png");
+	std::size_t	x = 0;
+
+	if (!img1)
+		throw exception("Impossible to load image");
+	x = (_config->WINDOW_WIDTH - img1->getSize().Width) / 2;
+	_env->clear();
+	utils::add_button(_env, img1, irr::core::position2di(x, _config->WINDOW_HEIGHT / 2), CodeEventGui::BACK);
 }
 
 void	gui::play_game()

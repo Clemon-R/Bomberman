@@ -49,6 +49,10 @@ bool	gui_handler::window_handler(const irr::SEvent& event)
 			_gui.main_menu();
 			break;
 
+		case CodeEventGui::MULTIPLAYER:
+			_gui.multiplayer_menu();
+			break;
+
 		default:
 		return (false);
 	}

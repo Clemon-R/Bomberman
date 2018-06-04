@@ -31,6 +31,7 @@ public:
 	
 	void	main_menu();
 	void	load_menu();
+	void	multiplayer_menu();
 
 	void	load_game(const std::string &filename);
 
