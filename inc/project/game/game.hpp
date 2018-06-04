@@ -57,6 +57,9 @@ public:
 	void	draw_all();
 	irr::scene::IMeshSceneNode	*add_wall(std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *> &floor);
 private:
+	void	full_corner_remove();
+	void	corner_remove();
+
 	void	draw_floor();
 	void	draw_wall();
 

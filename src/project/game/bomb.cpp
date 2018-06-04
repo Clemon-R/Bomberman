@@ -32,6 +32,7 @@ bomb::~bomb()
 	std::cout << "bomb: destroying...\n";
 	for (auto &fire : _fires){
 		std::get<4>(*fire)->remove();
+		std::get<4>(*fire) = nullptr;
 	}
 	std::cout << "bomb: destoyed\n";
 }
@@ -45,22 +46,19 @@ void	bomb::spawn()
 	_design->setPosition(utils::convert_position(_parent->get_position(), *_config));
 }
 
-void	bomb::run()
+bool	bomb::run()
 {
-	if (_end)
-		return;
 	if (!_exploded && utils::get_milliseconds() - _start >= 2000)
 		explode();
 	else if (_exploded){
 		kill();
 		if (utils::get_milliseconds() - _start >= 3000){
 			_parent->bomb_available();
-			for (auto &fire : _fires){
-				std::get<4>(*fire)->remove();
-			}
-			_end = true;
+			delete this;
+			return (false);
 		}
 	}
+	return (true);
 }
 
 void	bomb::kill_by_list(std::list<player *> &list)

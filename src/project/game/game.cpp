@@ -97,8 +97,10 @@ void	game::run()
 	auto	bomb = _bombs.begin();
 
 	if (!_break){
-		for (;bomb != _bombs.end();bomb++)
-			(*bomb)->run();
+		for (;bomb != _bombs.end();bomb++){
+			if (!(*bomb)->run())
+				bomb = _bombs.erase(bomb);
+		}
 		for (auto &player : _players)
 			player->refresh();
 	}
@@ -138,23 +140,76 @@ void	game::generate_floor()
 	std::cout << "game: map generated\n";
 }
 
-void 	game::generate_map()
+void    game::full_corner_remove()
 {
-	irr::video::ITexture	*brick = database::load_img("bric", ".png");
 	auto	y = _floor.begin();
 	auto	x = y->begin();
 
-	if (!brick)
-		throw exception("Impossible to load image");
 	for (;y != _floor.end();y++){
 		x = y->begin();
 		for (;x != y->end();x++){
-			if (std::get<2>(*x) != GroundType::NONE)
-				continue;
-			std::get<2>(*x) = GroundType::BRICK;
-			std::get<3>(*x) = brick;
+		if ((std::get<0>(*x) == 2 && std::get<1>(*x) == 1) ||
+			(std::get<0>(*x) == 1 && std::get<1>(*x) == 2) ||
+			(std::get<0>(*x) == 1 && std::get<1>(*x) == _config->TILE_COUNT - 3) ||
+			(std::get<0>(*x) == 2 && std::get<1>(*x) == _config->TILE_COUNT - 2) ||
+			(std::get<0>(*x) == _config->TILE_COUNT - 3 && std::get<1>(*x) == 1) ||
+			(std::get<0>(*x) == _config->TILE_COUNT - 2 && std::get<1>(*x) == 2) ||
+			(std::get<0>(*x) == _config->TILE_COUNT - 3 && std::get<1>(*x) == _config->TILE_COUNT - 2) ||
+			(std::get<0>(*x) == _config->TILE_COUNT - 2 && std::get<1>(*x) == _config->TILE_COUNT - 3)){
+			std::get<2>(*x) = GroundType::NONE;
+			std::get<3>(*x) = nullptr;
+		}
+		else
+			continue;
 		}
 	}
+}
+
+void    game::corner_remove()
+{
+    auto	y = _floor.begin();
+    auto	x = y->begin();
+    
+    for (;y != _floor.end();y++){
+        x = y->begin();
+        for (;x != y->end();x++){
+            if ((std::get<0>(*x) == 1 && std::get<1>(*x) == 1) || 
+                (std::get<0>(*x) == 1 && std::get<1>(*x) == _config->TILE_COUNT - 2) ||
+                (std::get<0>(*x) == _config->TILE_COUNT - 2 && std::get<1>(*x) == 1) ||
+                (std::get<0>(*x) == _config->TILE_COUNT - 2 && std::get<1>(*x) == _config->TILE_COUNT - 2)){
+                std::get<2>(*x) = GroundType::NONE;
+                std::get<3>(*x) = nullptr;
+            }
+            else
+                continue;
+        }
+    }
+    full_corner_remove();
+}
+
+void     game::generate_map()
+{
+    irr::video::ITexture	*wall = database::load_img("wall", ".png");
+    irr::video::ITexture	*brick = database::load_img("bric");
+    auto	y = _floor.begin();
+    auto	x = y->begin();
+
+    if (!brick)
+        throw exception("Impossible to load image");
+    for (;y != _floor.end();y++){
+        for (x = y->begin();x != y->end();x++){
+		if (std::get<2>(*x) != GroundType::NONE)
+			continue;
+		if (rand() % 4 == 1){
+			std::get<2>(*x) = GroundType::WALL;
+			std::get<3>(*x) = wall;
+			continue;
+		}
+		std::get<2>(*x) = GroundType::BRICK;
+		std::get<3>(*x) = brick;
+        }
+    }
+    corner_remove();
 }
 
 void	game::set_camera()
@@ -164,6 +219,7 @@ void	game::set_camera()
 
 	std::cout << "game: adding the camera...\n";
 	cam->setPosition(irr::core::vector3df(mid - _config->TILE_SIZE / 2, _config->GAME_AREA * 0.74, mid));
+	//cam->setPosition(irr::core::vector3df(0, _config->GAME_AREA * 0.74, mid));
 	cam->setTarget(irr::core::vector3df(mid - _config->TILE_SIZE / 2, 0, mid));
 	std::cout << "game: camera added\n";
 }
@@ -184,13 +240,14 @@ irr::scene::IMeshSceneNode	*game::add_wall(std::tuple<int, int, GroundType, irr:
 		std::get<0>(floor) * _config->TILE_SIZE
 	));
 	current->setMaterialTexture(0, std::get<3>(floor));
+	current->setMaterialFlag(irr::video::EMF_LIGHTING, false);
 	std::get<4>(floor) = current;
 	return (current);
 }
 
 void	game::draw_floor()
 {
-	auto	y = _floor.rbegin();
+	auto	y = _floor.begin();
 	auto	x = y->begin();
 	irr::scene::IMeshSceneNode	*current = nullptr;
 	irr::video::ITexture	*ground = database::load_img("ground");
@@ -198,7 +255,7 @@ void	game::draw_floor()
 	std::cout << "game: spawning floor...\n";
 	if (!ground)
 		throw exception("Impossible to load ground");
-	for (;y != _floor.rend();y++){
+	for (;y != _floor.end();y++){
 		for (x = y->begin();x != y->end();x++){
 			current = _smgr->addCubeSceneNode(_config->TILE_SIZE);
 			if (!current)
@@ -209,6 +266,7 @@ void	game::draw_floor()
 				std::get<0>(*x) * _config->TILE_SIZE
 			));
 			current->setMaterialTexture(0, ground);
+    			current->setMaterialFlag(irr::video::EMF_LIGHTING, false);
 		}
 	}
 	std::cout << "game: floor spawned\n";
