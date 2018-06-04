@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <cstdlib>
 
-ia::ia(player *parent) : _parent(parent)
+ia::ia(player *parent) : _parent(parent), _last(utils::get_milliseconds())
 {
 	std::cout << "ia: init...\n";
 	if (_parent)
@@ -30,6 +30,9 @@ void	ia::run()
 	std::list<irr::core::position2di>	dirs;
 	std::list<irr::core::position2di>::iterator	it;
 
+	if (utils::get_milliseconds() - _last < 750)
+		return;
+	_last = utils::get_milliseconds();
 	for (int i = 0;i < 4;i += 1){
 		pos.X += i % 2 - 2 * (i == 3);
 		pos.Y += (i + 1) % 2 - 2 * (i == 2);
@@ -45,5 +48,4 @@ void	ia::run()
 	std::advance(it, std::rand() % dirs.size());
 	if (!_parent->is_moving())
 		_parent->move_to(*it);
-	std::cout << "ia: pos X - " << it->X << ", poss Y - " << it->Y << std::endl;
 }

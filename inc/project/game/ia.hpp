@@ -10,6 +10,7 @@
 
 class	player;
 	#include "project/game/player.hpp"
+	#include "project/utils.hpp"
 	#include <iostream>
 	#include <list>
 
@@ -22,5 +23,6 @@ public:
 	void	run();
 private:
 	player	*_parent;
+	std::size_t	_last;
 };
 #endif /* !IA_HPP_ */
