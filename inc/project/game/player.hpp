@@ -51,6 +51,7 @@ public:
 	bool	is_alive() const;
 	ia	*get_ia();
 	void	set_ia();
+	bool	is_moving() const;
 private:
 	void	play();
 
@@ -58,6 +59,7 @@ private:
 	bomb		*_bomb;
 	bool		_break;
 	bool		_alive;
+	bool		_moving;
 	std::unique_ptr<ia>	_ia;
 
 	irr::core::vector3df			_target;

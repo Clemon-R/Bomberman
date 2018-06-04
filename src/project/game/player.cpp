@@ -13,7 +13,7 @@
 
 player::player(std::size_t id, game *parent, irr::IrrlichtDevice *graphic, config *config) : _graphic(graphic), _config(config),
 _anim(irr::scene::EMAT_STAND), _rotate(0, 0, 0), _break(false), _design(nullptr), _bomb(nullptr), _parent(parent), _id(id), _alive(true),
-_camera(nullptr), _ia(nullptr)
+_camera(nullptr), _ia(nullptr), _moving(false)
 {
 	std::size_t	mid = _config->GAME_AREA / 2;
 
@@ -88,6 +88,7 @@ void	player::refresh()
 		_anim = irr::scene::EMAT_STAND;
 		_design->setMD2Animation(_anim);
 		_design->setRotation(_rotate);
+		_moving = false;
 		std::cout << "player: arrived\n";
 	}
 }
@@ -128,6 +129,7 @@ void	player::move_to(const irr::core::position2di &pos)
 		_anim = irr::scene::EMAT_RUN;
 		_design->setMD2Animation(_anim);
 		_design->setRotation(_rotate);
+		_moving = true;
 		std::cout << "player: start running...\n";
 	}
 }
@@ -250,4 +252,9 @@ void	player::set_ia()
 ia	*player::get_ia()
 {
 	return (_ia.get());
+}
+
+bool	player::is_moving() const
+{
+	return (_moving);
 }

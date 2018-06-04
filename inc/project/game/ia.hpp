@@ -11,6 +11,7 @@
 class	player;
 	#include "project/game/player.hpp"
 	#include <iostream>
+	#include <list>
 
 class	ia
 {

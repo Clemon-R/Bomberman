@@ -347,8 +347,8 @@ void	game::draw_all()
 void	game::pause()
 {
 	std::cout << "game: pause\n";
-	if (_current)
-		_current->pause();
+	for (auto &p : _players)
+		p->pause();
 	break_menu();
 	_break = true;
 }
