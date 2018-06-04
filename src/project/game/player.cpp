@@ -134,8 +134,11 @@ void	player::move_to(const irr::core::position2di &pos)
 
 void	player::play()
 {
-	if (_design->getPosition().X != _target.X || _design->getPosition().Z != _target.Z)
-		move_to(utils::convert_vector(_target, *_config));
+	irr::core::vector3df	tmp = _target;
+
+	_target = _last;
+	if (tmp.X != _target.X || tmp.Z != _target.Z)
+		move_to(utils::convert_vector(tmp, *_config));
 }
 
 void	player::stop()
