@@ -11,16 +11,8 @@
 	#include "irrlicht/irrlicht.h"
 class	gui;
 	#include "project/gui/gui.hpp"
+	#include "project/enum_list.hpp"
 	#include <list>
-
-enum	CodeEventGui
-{
-	EXIT = 101,
-	PLAY,
-	LOAD,
-	CHARGE,
-	BACK
-};
 
 class	gui_handler : public irr::IEventReceiver
 {

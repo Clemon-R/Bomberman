@@ -16,22 +16,17 @@ class	project;
 	#include "project/project.hpp"
 class	game_handler;
 	#include "project/game/game_handler.hpp"
+	#include "project/game/bomb.hpp"
+	#include "project/enum_list.hpp"
 	#include <iostream>
 	#include <list>
 	#include <tuple>
 	#include <memory>
 
-enum	GroundType
-{
-	WALL,
-	GROUND,
-	BRICK
-};
-
 class	game : public interface
 {
 public:
-	game(irr::IrrlichtDevice *graphic, config *config, project *project);
+	game(irr::IrrlichtDevice *graphic, config *config, project *project, bool draw = true);
 	~game();
 
 	player	*get_player();
@@ -55,10 +50,20 @@ public:
 
 	void	set_camera();
 
-	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>	get_floor();
+	std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *>	*get_floor(int x, int y);
+	std::list<bomb *>	&get_bombs();
+	std::list<player *>	get_player_by_pos(int x, int y);
+
+	void	draw_all();
+	irr::scene::IMeshSceneNode	*add_wall(std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *> &floor);
 private:
-	void	generate_floor();
+	void	full_corner_remove();
+	void	corner_remove();
+
+	void	draw_floor();
 	void	draw_wall();
+
+	void	generate_floor();
 	void	generate_map();
 
 	void	dispatch_load(const std::string &param, const std::string &arg);
@@ -68,7 +73,8 @@ private:
 
 	player	*_current;
 	std::list<std::unique_ptr<player>>	_players;
-	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *>>>	_floor;
+	std::list<bomb *>			_bombs;
+	std::list<std::list<std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *>>>	_floor;
 
 	irr::IrrlichtDevice	*_graphic;
 	irr::video::IVideoDriver	*_driver;

@@ -12,9 +12,9 @@
 	#include "project/config.hpp"
 class	player;
 	#include "project/game/player.hpp"
-class	game;
-	#include "project/game/game.hpp"
+	#include "project/enum_list.hpp"
 	#include <iostream>
+	#include <tuple>
 	#include <list>
 
 class	bomb
@@ -24,18 +24,20 @@ public:
 	~bomb();
 
 	void	spawn();
-	void	run();
+	bool	run();
 private:
 	void	explode();
+	void	change_to_fire(std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *> *floor);
 	void	kill();
-	void	remove_brick();
+	void	kill_by_list(std::list<player *> &list);
 
-	irr::scene::ISceneNode	*_design;
-	game			*_game_parent;
+	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *> *>	_fires;
+
+	irr::scene::IMeshSceneNode	*_design;
 	player			*_parent;
 	std::size_t		_start;
 	bool			_exploded;
-	std::list<irr::scene::ISceneNode *>	_fires;
+	bool			_end;
 
 	irr::IrrlichtDevice	*_graphic;
 	irr::video::IVideoDriver	*_driver;

@@ -13,7 +13,7 @@
 #include <fstream>
 #include <memory>
 
-player::player(irr::IrrlichtDevice *graphic, config *config, game *parent) : _graphic(graphic), _config(config),
+player::player(game *parent, irr::IrrlichtDevice *graphic, config *config) : _graphic(graphic), _config(config),
 _anim(irr::scene::EMAT_STAND), _rotate(0, 0, 0), _break(false), _design(nullptr), _bomb(nullptr), _parent(parent)
 {
 	std::size_t	mid = _config->GAME_AREA / 2;
@@ -24,6 +24,7 @@ _anim(irr::scene::EMAT_STAND), _rotate(0, 0, 0), _break(false), _design(nullptr)
 	if (!_driver || !_smgr)
 		throw exception("Impossible to find the driver");
 	_target = irr::core::vector3df(mid, _config->TILE_SIZE, mid);
+	_last = _target;
 	std::cout << "player: initiated\n";
 }
 
@@ -33,10 +34,18 @@ player::~player()
 	std::cout << "player: destoyed\n";
 }
 
+void	player::dead()
+{
+	if (_design)
+		_design->remove();
+	_design = nullptr;
+}
+
 void	player::spawn()
 {
 	irr::scene::IAnimatedMesh	*mesh = nullptr;
 	float	size = 0.5f * _config->GAME_SCALE;
+	irr::core::vector3df	old = _target;
 
 	mesh = _smgr->getMesh("ressources/skin/sydney.md2");
 	if (!mesh)
@@ -48,28 +57,36 @@ void	player::spawn()
 	_design->setMaterialFlag(irr::video::EMF_LIGHTING, false);
 	_design->setMD2Animation(_anim);
 	_design->setRotation(_rotate);
-	_design->setPosition(_target);
+	_design->setPosition(_last);
 	_design->setScale(irr::core::vector3df(size, size, size));
+	_target = _last;
+	if (_last.X != _target.X || _last.Z != _target.Z)
+		move_to(utils::convert_vector(old, *_config));
 }
 
 void	player::refresh()
 {
-	if (_break){
+	if (!_design)
+		return;
+	else if (_break){
 		play();
 		_break = false;
 	}
-	if (_anim == irr::scene::EMAT_RUN && _design->getPosition().X == _target.X && _design->getPosition().Z == _target.Z){
+	if (_design)
+		_last = _design->getPosition();
+	if (_anim == irr::scene::EMAT_RUN && _last.X == _target.X && _last.Z == _target.Z){
 		_anim = irr::scene::EMAT_STAND;
 		_design->setMD2Animation(_anim);
 		_design->setRotation(_rotate);
 		std::cout << "player: arrived\n";
 	}
-	if (_bomb)
-		_bomb->run();
 }
 
 void	player::bomb_available()
 {
+	if (!_bomb)
+		return;
+	//_parent->get_bombs().remove(_bomb);
 	_bomb = nullptr;
 }
 
@@ -80,6 +97,8 @@ void	player::move_to(const irr::core::position2di &pos)
 	irr::core::position2di	player = get_position();
 	irr::scene::ISceneNodeAnimator	*anim = nullptr;
 
+	if (!_design)
+		return;
 	std::cout << "player: moving...\n";
 	if ((pos.X == old.X && pos.Y == old.Y) ||
 		(player.X == pos.X && player.Y == pos.Y))
@@ -92,7 +111,7 @@ void	player::move_to(const irr::core::position2di &pos)
 		delay = (player.Y - pos.Y) * 100;
 		_rotate = irr::core::vector3df(0, delay < 0 ? 0 : 180, 0);
 	}
-	_target = irr::core::vector3df(static_cast<float>(pos.Y) * _config->TILE_SIZE, _design->getPosition().Y, static_cast<float>(pos.X) * _config->TILE_SIZE);
+	_target = utils::convert_position(pos, *_config);
 	anim = _smgr->createFlyStraightAnimator(_design->getPosition(), _target, delay < 0 ? delay * -1 : delay);
 	if (anim){
 		_design->addAnimator(anim);
@@ -112,6 +131,8 @@ void	player::play()
 
 void	player::stop()
 {
+	if (!_design)
+		return;
 	_design->removeAnimators();
 	_design->setMD2Animation(irr::scene::EMAT_STAND);
 	_target = _design->getPosition();
@@ -120,19 +141,21 @@ void	player::stop()
 void	player::pause()
 {
 	_break = true;
+	if (!_design)
+		return;
 	_design->removeAnimators();
 	_design->setMD2Animation(irr::scene::EMAT_STAND);
 }
 
 irr::core::position2di	player::get_position() const
 {
-	return (utils::convert_vector(_design->getPosition(), *_config));
+	return (utils::convert_vector(_last, *_config));
 }
 
 irr::core::position2di	player::get_real_position() const
 {
-	return (irr::core::position2di(_design->getPosition().Z,
-		_design->getPosition().X));
+	return (irr::core::position2di(_last.Z,
+		_last.X));
 }
 
 void	player::save_player(std::ofstream &file)
@@ -162,6 +185,7 @@ void	player::load_player(const std::string &param, const std::string &arg)
 void	player::set_position(const irr::core::position2di &pos)
 {
 	_target = utils::convert_position(pos, *_config);
+	_last = _target;
 	if (_design)
 		_design->setPosition(_target);
 }
@@ -175,6 +199,13 @@ void	player::set_rotation(const std::size_t dir)
 
 void	player::drop_bomb()
 {
-	if (!_bomb)
-		_bomb = new bomb(_parent, this, _graphic, _config);
+	if (_bomb)
+		return;
+	_bomb = new bomb(this, _graphic, _config);
+	_parent->get_bombs().push_back(_bomb);
+}
+
+game	*player::get_parent() const
+{
+	return (_parent);
 }

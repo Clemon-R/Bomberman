@@ -9,9 +9,11 @@
 #include "exception.hpp"
 #include "project/database.hpp"
 #include "project/utils.hpp"
+#include <algorithm>
+#include <string>
 
-bomb::bomb(game *game_parent, player *parent, irr::IrrlichtDevice *graphic, config *config) : _graphic(graphic), _config(config),
-_design(nullptr), _game_parent(game_parent), _parent(parent), _start(utils::get_milliseconds()), _exploded(false)
+bomb::bomb(player *parent, irr::IrrlichtDevice *graphic, config *config) : _graphic(graphic), _config(config),
+_design(nullptr), _parent(parent), _start(utils::get_milliseconds()), _exploded(false), _end(false)
 {
 	std::cout << "bomb: init...\n";
 	if (!_parent)
@@ -28,8 +30,10 @@ _design(nullptr), _game_parent(game_parent), _parent(parent), _start(utils::get_
 bomb::~bomb()
 {
 	std::cout << "bomb: destroying...\n";
-	for (auto &fire : _fires)
-		fire->remove();
+	for (auto &fire : _fires){
+		std::get<4>(*fire)->remove();
+		std::get<4>(*fire) = nullptr;
+	}
 	std::cout << "bomb: destoyed\n";
 }
 
@@ -42,7 +46,7 @@ void	bomb::spawn()
 	_design->setPosition(utils::convert_position(_parent->get_position(), *_config));
 }
 
-void	bomb::run()
+bool	bomb::run()
 {
 	if (!_exploded && utils::get_milliseconds() - _start >= 2000)
 		explode();
@@ -52,8 +56,16 @@ void	bomb::run()
 			remove_brick();
 			_parent->bomb_available();
 			delete this;
+			return (false);
 		}
 	}
+	return (true);
+}
+
+void	bomb::kill_by_list(std::list<player *> &list)
+{
+	for (auto &elem : list)
+		elem->dead();
 }
 
 void	bomb::remove_brick()
@@ -96,35 +108,57 @@ void	bomb::remove_brick()
 
 void	bomb::kill()
 {
+	irr::core::position2di	pos = utils::convert_vector(_design->getPosition(), *_config);
+	std::list<player *>	list;
 
+	for (int i = 0;i < 4;i += 1){
+		pos.X += i % 2 - 2 * (i == 3);
+		pos.Y += (i + 1) % 2 - 2 * (i == 2);
+		list = _parent->get_parent()->get_player_by_pos(pos.X, pos.Y);
+		kill_by_list(list);
+		pos.X -= i % 2 - 2 * (i == 3);
+		pos.Y -= (i + 1) % 2 - 2 * (i == 2);
+	}
+	list = _parent->get_parent()->get_player_by_pos(pos.X, pos.Y);
+	kill_by_list(list);
+}
+
+void	bomb::change_to_fire(std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *> *floor)
+{
+	irr::video::ITexture	*fire = database::load_img("fire", ".png");
+
+	if (!floor || std::get<2>(*floor) == GroundType::WALL)
+		return;
+	if (!fire)
+		throw exception("Impossible to load fire");
+	std::get<3>(*floor) = fire;
+	std::get<2>(*floor) = GroundType::FIRE;
+	if (std::get<4>(*floor))
+		std::get<4>(*floor)->setMaterialTexture(0, std::get<3>(*floor));
+	else
+		_parent->get_parent()->add_wall(*floor);
+	_fires.push_back(floor);
 }
 
 void	bomb::explode()
 {
-	irr::scene::ISceneNode	*current = nullptr;
 	irr::core::position2di	pos = utils::convert_vector(_design->getPosition(), *_config);
+	std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *>	*ground = nullptr;
 
 	std::cout << "bomb: exploding...\n";
 	if (_design)
 		_design->remove();
 	_exploded = true;
 	for (int i = 0;i < 4;i += 1){
-		current = _smgr->addCubeSceneNode(_config->TILE_SIZE);
-		if (!current)
-			throw exception("Impossible to add cube");
-		current->setMaterialTexture(0, database::load_img("fire", ".png"));
 		pos.X += i % 2 - 2 * (i == 3);
 		pos.Y += (i + 1) % 2 - 2 * (i == 2);
-		current->setPosition(utils::convert_position(pos, *_config));
+		ground = _parent->get_parent()->get_floor(pos.X, pos.Y);
+		change_to_fire(ground);
 		pos.X -= i % 2 - 2 * (i == 3);
 		pos.Y -= (i + 1) % 2 - 2 * (i == 2);
-		_fires.push_back(current);
 	}
-	current = _smgr->addCubeSceneNode(_config->TILE_SIZE);
-	if (!current)
-		throw exception("Impossible to add cube");
-	current->setMaterialTexture(0, database::load_img("fire", ".png"));
-	current->setPosition(utils::convert_position(pos, *_config));
-	_fires.push_back(current);
+	ground = _parent->get_parent()->get_floor(pos.X, pos.Y);
+	change_to_fire(ground);
+	_design = std::get<4>(*ground);
 	std::cout << "bomb: exploded\n";
 }

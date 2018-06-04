@@ -11,17 +11,8 @@
 	#include "irrlicht/irrlicht.h"
 class	game;
 	#include "project/game/game.hpp"
+	#include "project/enum_list.hpp"
 	#include <list>
-
-enum	CodeEventGame
-{
-	LEAVE = 101,
-	CONTINU,
-	SAVE,
-	BACKGAME,
-	SAVEGAME,
-	BREAK
-};
 
 class	game_handler : public irr::IEventReceiver
 {

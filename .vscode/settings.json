@@ -36,6 +36,9 @@
 		"type_traits": "cpp",
 		"typeinfo": "cpp",
 		"utility": "cpp",
-		"*.ipp": "cpp"
+		"*.ipp": "cpp",
+		"strstream": "cpp",
+		"cinttypes": "cpp",
+		"typeindex": "cpp"
 	}
 }
