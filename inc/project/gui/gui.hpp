@@ -38,6 +38,7 @@ public:
 	const std::string	get_text();
 private:
 	irr::IrrlichtDevice	*_graphic;
+	irrklang::ISound	*_sound;
 	irr::video::IVideoDriver	*_driver;
 	irr::gui::IGUIEnvironment	*_env;
 	std::unique_ptr<gui_handler>	_handler;

@@ -8,7 +8,7 @@
 #include "project/project.hpp"
 #include "project/database.hpp"
 
-project::project() : _graphic(nullptr), _config(nullptr), _interface(nullptr)
+project::project() : _graphic(nullptr), _config(nullptr), _interface(nullptr), _sound(nullptr)
 {
 	std::cout << "project: init...\n";
 	_config.reset(saver::load_config());
@@ -25,6 +25,7 @@ project::~project()
 	_config.reset(nullptr);
 	_interface.reset(nullptr);
 	_graphic.reset(nullptr);
+	_sound.reset(nullptr);
 	std::cout << "project: destructed\n";
 }
 
@@ -44,6 +45,9 @@ void	project::init_of_graphic()
 	);
 	if (!_graphic)
 		throw exception("Impossible to create the graphic");
+	_sound.reset(irrklang::createIrrKlangDevice());
+	if (!_sound)
+		throw exception("Impossible to create the sound engine");
 	_graphic->setWindowCaption(L"The bomberman - by Epitech students");
 	_graphic->setResizable(false);
 	database::set_config(_graphic.get(), _config.get());
@@ -73,4 +77,9 @@ void	project::run()
 void	project::set_interface(interface *window)
 {
 	_interface.reset(window);
+}
+
+irrklang::ISoundEngine	*project::get_sound()
+{
+	return (_sound.get());
 }

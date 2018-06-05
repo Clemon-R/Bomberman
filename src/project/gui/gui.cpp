@@ -20,6 +20,7 @@ _config(config), _driver(nullptr), _env(nullptr), _handler(std::make_unique<gui_
 		throw exception("Impossible to find the driver");
 	_graphic->setEventReceiver(_handler.get());
 	main_menu();
+	_sound = _project->get_sound()->play2D("ressources/sounds/gui.mp3", true, false, true);
 	std::cout << "gui: initiated\n";
 }
 
@@ -27,6 +28,10 @@ gui::~gui()
 {
 	std::cout << "gui: destroying...\n";
 	_handler.reset(nullptr);
+	if (_sound){
+		_sound->stop();
+		_sound->drop();
+	}
 	std::cout << "gui: destroyed\n";
 }
 
