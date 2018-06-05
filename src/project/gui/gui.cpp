@@ -129,3 +129,8 @@ const std::string	gui::get_text()
 	}
 	return (result);
 }
+
+project	&gui::get_project()
+{
+	return (*_project);
+}

@@ -10,10 +10,11 @@
 #include "project/database.hpp"
 #include "project/utils.hpp"
 #include <fstream>
+#include <complex>
 
 player::player(std::size_t id, game *parent, irr::IrrlichtDevice *graphic, config *config) : _graphic(graphic), _config(config),
 _anim(irr::scene::EMAT_STAND), _rotate(0, 0, 0), _break(false), _design(nullptr), _bomb(nullptr), _parent(parent), _id(id), _alive(true),
-_camera(nullptr), _ia(nullptr), _moving(false)
+_camera(nullptr), _ia(nullptr), _moving(false), _sound(nullptr)
 {
 	std::size_t	mid = _config->GAME_AREA / 2;
 
@@ -77,16 +78,23 @@ void	player::refresh()
 		return;
 	if (_ia)
 		_ia->run();
-	_last = _design->getPosition();
+	_last = irr::core::vector3df(_design->getPosition().X + _config->TILE_SIZE / 2, _design->getPosition().Y, _design->getPosition().Z + _config->TILE_SIZE / 2);
 	if (_camera){
 		_camera->setPosition(irr::core::vector3df(_last.X - _config->TILE_SIZE * 4, _config->TILE_SIZE * 4, _last.Z));
 		_camera->setTarget(_last);
 	}
+	if (_sound)
+		_sound->setVolume(get_volume());
 	if (_anim == irr::scene::EMAT_RUN && _last.X == _target.X && _last.Z == _target.Z){
 		_anim = irr::scene::EMAT_STAND;
 		_design->setMD2Animation(_anim);
 		_design->setRotation(_rotate);
 		_moving = false;
+		if (_sound){
+			_sound->stop();
+			_sound->drop();
+			_sound = nullptr;
+		}
 		std::cout << "player: arrived\n";
 	}
 }
@@ -128,6 +136,8 @@ void	player::move_to(const irr::core::position2di &pos)
 		_design->setMD2Animation(_anim);
 		_design->setRotation(_rotate);
 		_moving = true;
+		_sound = _parent->get_project().get_sound()->play2D("ressources/sounds/run.mp3", true, false, true);
+		_sound->setVolume(get_volume());
 		std::cout << "player: start running...\n";
 	}
 }
@@ -149,6 +159,11 @@ void	player::stop()
 	_design->removeAnimators();
 	_design->setMD2Animation(irr::scene::EMAT_STAND);
 	_target = _design->getPosition();
+	if (_sound){
+		_sound->stop();
+		_sound->drop();
+		_sound = nullptr;
+	}
 }
 
 void	player::pause()
@@ -262,4 +277,23 @@ ia	*player::get_ia()
 bool	player::is_moving() const
 {
 	return (_moving);
+}
+
+float	player::get_volume()
+{
+	player	*current = _parent->get_current();
+	irr::core::position2di	pos = current->get_position();
+	irr::core::position2di	own = get_position();
+	float		distance = 1.0f;
+	double		cell_x = abs(pos.X - own.X);
+	double		cell_y = abs(pos.Y - own.Y);
+	double		max = (_config->TILE_COUNT - 2) / 2;
+
+	if (cell_x == 0 && cell_y == 0)
+		return (1);
+	else if (cell_x > max || cell_y > max)
+		return (0);
+	distance -= (cell_x + cell_y) / max;
+	std::cout << "player: sound - " << distance << std::endl;
+	return (distance);
 }

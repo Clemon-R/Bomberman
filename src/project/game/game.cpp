@@ -282,8 +282,8 @@ void     game::generate_map()
 			if (std::get<0>(*x) == 0 || std::get<1>(*x) == 0 || std::get<0>(*x) == _config->TILE_COUNT - 1 || std::get<1>(*x) == _config->TILE_COUNT - 1)
 				continue;
 			if (std::get<0>(*x) % 2 == 0 || std::get<1>(*x) % 2 == 0){
-				std::get<2>(*x) = GroundType::BRICK;
-				std::get<3>(*x) = brick;
+				//std::get<2>(*x) = GroundType::BRICK;
+				//std::get<3>(*x) = brick;
 				continue;
 			} else {
 				std::get<2>(*x) = GroundType::WALL;
@@ -590,4 +590,14 @@ const std::string	game::get_text()
 		result += _text->getText()[i];
 	}
 	return (result);
+}
+
+project	&game::get_project()
+{
+	return (*_project);
+}
+
+player	*game::get_current()
+{
+	return (_current);
 }

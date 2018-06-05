@@ -58,6 +58,8 @@ public:
 
 	void	draw_all();
 	irr::scene::IMeshSceneNode	*add_wall(TYPE_FLOOR &floor);
+	project	&get_project();
+	player	*get_current();
 private:
 	void	create_players();
 

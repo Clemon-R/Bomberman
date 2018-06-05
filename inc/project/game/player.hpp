@@ -9,6 +9,7 @@
 	#define PLAYER_HPP_
 
 	#include "irrlicht/irrlicht.h"
+	#include "irrklang/irrKlang.h"
 	#include "project/config.hpp"
 class	bomb;
 	#include "project/game/bomb.hpp"
@@ -55,6 +56,8 @@ public:
 private:
 	void	play();
 
+	float	get_volume();
+
 	std::size_t	_id;
 	bomb		*_bomb;
 	bool		_break;
@@ -67,6 +70,7 @@ private:
 
 	config					*_config;
 	irr::IrrlichtDevice			*_graphic;
+	irrklang::ISound			*_sound;
 	irr::video::IVideoDriver		*_driver;
 	irr::scene::ISceneManager		*_smgr;
 

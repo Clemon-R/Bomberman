@@ -36,6 +36,7 @@ public:
 	void	load_game(const std::string &filename);
 
 	const std::string	get_text();
+	project			&get_project();
 private:
 	irr::IrrlichtDevice	*_graphic;
 	irrklang::ISound	*_sound;

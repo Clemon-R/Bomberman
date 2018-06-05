@@ -31,6 +31,7 @@ bool	game_handler::window_handler(const irr::SEvent& event)
 	irr::s32	caller = event.GUIEvent.Caller->getID();
 
 	std::cout << "game_handler: new action\n";
+	_game.get_project().get_sound()->play2D("ressources/sounds/btn.mp3");
 	switch (caller){
 		case CodeEventGame::BREAK:
 			_game.pause();
