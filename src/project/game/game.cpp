@@ -279,15 +279,18 @@ void     game::generate_map()
 	std::cout << "game: adding all random wall/bric...\n";
 	for (;y != _floor.end();y++){
 		for (x = y->begin();x != y->end();x++){
-			if (std::get<2>(*x) != GroundType::NONE)
+			if (std::get<0>(*x) == 0 || std::get<1>(*x) == 0 || std::get<0>(*x) == _config->TILE_COUNT - 1 || std::get<1>(*x) == _config->TILE_COUNT - 1)
 				continue;
-			if (rand() % 4 == 1){
+			if (std::get<0>(*x) % 2 == 0 || std::get<1>(*x) % 2 == 0){
+				std::get<2>(*x) = GroundType::BRICK;
+				std::get<3>(*x) = brick;
+				continue;
+			} else {
 				std::get<2>(*x) = GroundType::WALL;
 				std::get<3>(*x) = wall;
 				continue;
 			}
-			std::get<2>(*x) = GroundType::BRICK;
-			std::get<3>(*x) = brick;
+
 		}
 	}
 	std::cout << "game: random done\n";
