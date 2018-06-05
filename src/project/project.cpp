@@ -33,7 +33,7 @@ void	project::init_of_graphic()
 	std::cout << "project: init of the graphic...\n";
 	_graphic.reset(
 		irr::createDevice(
-			irr::video::EDT_SOFTWARE,
+			irr::video::EDT_OPENGL,
 			irr::core::dimension2d<irr::u32>(_config->WINDOW_WIDTH, _config->WINDOW_HEIGHT),
 			16,
 			_config->FULL_SCREEN == "1",

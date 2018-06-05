@@ -14,9 +14,11 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <algorithm>
+#include <regex>
 
 game::game(irr::IrrlichtDevice *graphic, config *config, project *project, bool draw) : _graphic(graphic), _config(config),
-_break(false), _current(nullptr), _project(project), _handler(new game_handler(graphic, *this))
+_break(false), _current(nullptr), _project(project), _handler(new game_handler(graphic, *this)), _camera(nullptr)
 {
 	std::cout << "game: init...\n";
 	_server = new server();
@@ -27,7 +29,7 @@ _break(false), _current(nullptr), _project(project), _handler(new game_handler(g
 		throw exception("Impossible to find the driver");
 	generate_floor();
 	for (int i = 0;i < 4;i += 1){
-		_players.push_back(std::make_unique<player>(this, _graphic, _config));
+		_players.push_back(std::make_unique<player>(i, this, _graphic, _config));
 		_players.back()->set_position(irr::core::position2di(i % 2 * (_config->TILE_COUNT - 3) + 1, i / 2 * (_config->TILE_COUNT - 3) + 1));
 		_players.back()->set_rotation(i / 2 * 180);
 	}
@@ -93,20 +95,31 @@ void	game::game_menu()
 	utils::add_button(_env, img, irr::core::position2di(0, 0), CodeEventGame::BREAK);
 }
 
+void	game::back_to_main()
+{
+	std::cout << "game: back to the main\n";
+	_smgr->clear();
+	_graphic->setEventReceiver(nullptr);
+	_project->set_interface(new gui(_graphic, _config, _project));
+}
+
 void	game::run()
 {
 	auto	bomb = _bombs.begin();
 
-	if (!_break){
-		for (;bomb != _bombs.end();bomb++){
-			if (!(*bomb)->run())
-				bomb = _bombs.erase(bomb);
-		}
-		for (auto &player : _players)
-			player->refresh();
-	}
 	_smgr->drawAll();
 	_env->drawAll();
+	if (_break)
+		return;
+	for (;bomb != _bombs.end();bomb++){
+		if (!(*bomb)->run())
+			bomb = _bombs.erase(bomb);
+	}
+	for (auto &player : _players)
+		if (player->is_alive())
+			player->refresh();
+		else if (!_camera)
+			set_camera();
 }
 
 void	game::generate_floor()
@@ -137,7 +150,7 @@ void	game::generate_floor()
 	}
 	if (line.size() > 0)
 		_floor.push_back(line);
-	//generate_map();
+	generate_map();
 	std::cout << "game: map generated\n";
 }
 
@@ -168,49 +181,49 @@ void    game::full_corner_remove()
 
 void    game::corner_remove()
 {
-    auto	y = _floor.begin();
-    auto	x = y->begin();
-    
-    for (;y != _floor.end();y++){
-        x = y->begin();
-        for (;x != y->end();x++){
-            if ((std::get<0>(*x) == 1 && std::get<1>(*x) == 1) || 
-                (std::get<0>(*x) == 1 && std::get<1>(*x) == _config->TILE_COUNT - 2) ||
-                (std::get<0>(*x) == _config->TILE_COUNT - 2 && std::get<1>(*x) == 1) ||
-                (std::get<0>(*x) == _config->TILE_COUNT - 2 && std::get<1>(*x) == _config->TILE_COUNT - 2)){
-                std::get<2>(*x) = GroundType::NONE;
-                std::get<3>(*x) = nullptr;
-            }
-            else
-                continue;
-        }
-    }
-    full_corner_remove();
+	auto	y = _floor.begin();
+	auto	x = y->begin();
+	
+	for (;y != _floor.end();y++){
+		x = y->begin();
+		for (;x != y->end();x++){
+		if ((std::get<0>(*x) == 1 && std::get<1>(*x) == 1) || 
+			(std::get<0>(*x) == 1 && std::get<1>(*x) == _config->TILE_COUNT - 2) ||
+			(std::get<0>(*x) == _config->TILE_COUNT - 2 && std::get<1>(*x) == 1) ||
+			(std::get<0>(*x) == _config->TILE_COUNT - 2 && std::get<1>(*x) == _config->TILE_COUNT - 2)){
+			std::get<2>(*x) = GroundType::NONE;
+			std::get<3>(*x) = nullptr;
+		}
+		else
+			continue;
+		}
+	}
+	full_corner_remove();
 }
 
 void     game::generate_map()
 {
-    irr::video::ITexture	*wall = database::load_img("wall", ".png");
-    irr::video::ITexture	*brick = database::load_img("bric");
-    auto	y = _floor.begin();
-    auto	x = y->begin();
+	irr::video::ITexture	*wall = database::load_img("wall", ".png");
+	irr::video::ITexture	*brick = database::load_img("bric", ".png");
+	auto	y = _floor.begin();
+	auto	x = y->begin();
 
-    if (!brick)
-        throw exception("Impossible to load image");
-    for (;y != _floor.end();y++){
-        for (x = y->begin();x != y->end();x++){
-		if (std::get<2>(*x) != GroundType::NONE)
-			continue;
-		if (rand() % 4 == 1){
-			std::get<2>(*x) = GroundType::WALL;
-			std::get<3>(*x) = wall;
-			continue;
+	if (!brick)
+		throw exception("Impossible to load image");
+	for (;y != _floor.end();y++){
+		for (x = y->begin();x != y->end();x++){
+			if (std::get<2>(*x) != GroundType::NONE)
+				continue;
+			if (rand() % 4 == 1){
+				std::get<2>(*x) = GroundType::WALL;
+				std::get<3>(*x) = wall;
+				continue;
+			}
+			std::get<2>(*x) = GroundType::BRICK;
+			std::get<3>(*x) = brick;
 		}
-		std::get<2>(*x) = GroundType::BRICK;
-		std::get<3>(*x) = brick;
-        }
-    }
-    corner_remove();
+	}
+	corner_remove();
 }
 
 void	game::set_camera()
@@ -220,7 +233,7 @@ void	game::set_camera()
 
 	std::cout << "game: adding the camera...\n";
 	cam->setPosition(irr::core::vector3df(mid - _config->TILE_SIZE / 2, _config->GAME_AREA * 0.74, mid));
-	//cam->setPosition(irr::core::vector3df(0, _config->GAME_AREA * 0.74, mid));
+	//cam->setPosition(irr::core::vector3df(mid / 2, _config->GAME_AREA * 0.74, mid));
 	cam->setTarget(irr::core::vector3df(mid - _config->TILE_SIZE / 2, 0, mid));
 	std::cout << "game: camera added\n";
 }
@@ -245,6 +258,10 @@ irr::scene::IMeshSceneNode	*game::add_wall(std::tuple<int, int, GroundType, irr:
 	std::get<4>(floor) = current;
 	return (current);
 }
+
+/**
+ * Drawing the ground
+ **/
 
 void	game::draw_floor()
 {
@@ -273,6 +290,10 @@ void	game::draw_floor()
 	std::cout << "game: floor spawned\n";
 }
 
+/**
+ * Drawing all block on the ground
+ **/
+
 void	game::draw_wall()
 {
 	auto	y = _floor.rbegin();
@@ -290,6 +311,10 @@ void	game::draw_wall()
 	std::cout << "game: wall spawned\n";
 }
 
+/**
+ * Drawing the ground and blocks
+ **/
+
 void	game::draw_all()
 {
 	auto	y = _floor.rbegin();
@@ -305,9 +330,17 @@ void	game::draw_all()
 	draw_wall();
 	for (const auto &player : _players)
 		player->spawn();
-	set_camera();
+	if (_current->is_alive())
+		_current->set_camera();
+	else
+		set_camera();
 	std::cout << "game: map spawned\n";
 }
+
+
+/**
+ * Pause the game
+ **/
 
 void	game::pause()
 {
@@ -318,6 +351,11 @@ void	game::pause()
 	_break = true;
 }
 
+
+/**
+ * Continue the game
+ **/
+
 void	game::play()
 {
 	std::cout << "game: continue\n";
@@ -325,32 +363,92 @@ void	game::play()
 	_break = false;
 }
 
-player	*game::get_player()
-{
-	return (_current);
-}
+/**
+ * Load the map with a list of enum
+ **/
 
-bool	game::is_break() const
+void	game::load_map(const std::string &map)
 {
-	return (_break);
-}
+	std::stringstream	ss;
+	std::string		val;
+	int			value = -1;
+	irr::video::ITexture	*wall = database::load_img("wall", ".png");
+	irr::video::ITexture	*bric = database::load_img("bric", ".png");
+	auto	y = _floor.begin();
+	auto	x = y->begin();
 
-void	game::back_to_main()
-{
-	std::cout << "game: back to the main\n";
-	_smgr->clear();
-	_graphic->setEventReceiver(nullptr);
-	_project->set_interface(new gui(_graphic, _config, _project));
-}
+	std::cout << "game: loading map...\n";
+	if (!wall || !bric)
+		throw exception("Impossible to load image");
+	ss.str(map);
+	while (std::getline(ss, val, ',')){
+		value = std::atoi(val.c_str());
+		switch (value){
+			case GroundType::WALL:
+			std::get<2>(*x) = GroundType::WALL;
+			std::get<3>(*x) = wall;
+			break;
 
-const std::string	game::get_text()
-{
-	std::string	result;
+			case GroundType::BRICK:
+			std::get<2>(*x) = GroundType::BRICK;
+			std::get<3>(*x) = bric;
+			break;
 
-	for (int i = 0;_text && _text->getText() && _text->getText()[i];i++){
-		result += _text->getText()[i];
+			default:
+			std::get<2>(*x) = GroundType::NONE;
+			std::get<3>(*x) = nullptr;
+			break;
+		}
+		x++;
+		if (x == y->end()){
+			y++;
+			if (y == _floor.end())
+				break;
+			x = y->begin();
+		}
+
 	}
-	return (result);
+	std::cout << "game: map loaded\n";
+}
+
+/**
+ * Dispatch param of save file
+ **/
+
+void	game::dispatch_load(const std::string &param, const std::string &arg)
+{
+	std::regex	e("P([0-9])+_(.+)");
+	std::smatch	matchs;
+
+	std::cout << "game: dispatch param - " << param << std::endl;
+	if (std::regex_search(param, matchs, e)){
+		for (auto &p : _players)
+			if (p->get_id() == std::atoi(matchs[1].str().c_str()))
+				p->load_player(matchs[2], arg);
+	} else if (param.compare("MAP") == 0)
+		load_map(arg);
+}
+
+void	game::load_game(const std::string &filename)
+{
+	std::ifstream	file;
+	std::string	line;
+	std::smatch	matchs;
+	std::regex	e("(.+)=(.+)");
+
+	std::cout << "game: loading...\n";
+	file.open(filename);
+	if (!file.is_open())
+		throw exception("Impossible to load the save");
+	while (std::getline(file, line)){
+		while (std::regex_search(line, matchs, e)){
+			dispatch_load(matchs[1], matchs[2]);
+			line = matchs.suffix().str();
+		}
+	}
+	draw_all();
+	file.close();
+	std::cout << "game: loaded\n";
 }
 
 void	game::save_map(std::ofstream &file)
@@ -372,46 +470,6 @@ void	game::save_map(std::ofstream &file)
 	std::cout << "game: map saved\n";
 }
 
-void	game::load_map(const std::string &map)
-{
-	std::stringstream	ss;
-	std::string		val;
-	int			value = -1;
-	irr::video::ITexture	*wall = database::load_img("wall", ".png");
-	irr::video::ITexture	*bric = database::load_img("bric", ".png");
-	auto	y = _floor.begin();
-	auto	x = y->begin();
-
-	std::cout << "game: loading map...\n";
-	if (!wall || !bric)
-		throw exception("Impossible to load image");
-	ss.str(map);
-	while (std::getline(ss, val, ',')){
-		value = std::atoi(val.c_str());
-		std::cout << "game: type - " << val << std::endl;
-		if (value == GroundType::WALL){
-			std::get<2>(*x) = GroundType::WALL;
-			std::get<3>(*x) = wall;
-		} else if (value == GroundType::NONE){
-			std::get<2>(*x) = GroundType::NONE;
-			std::get<3>(*x) = nullptr;
-		} else if (value == GroundType::BRICK){
-			std::get<2>(*x) = GroundType::BRICK;
-			std::get<3>(*x) = bric;
-		}
-		x++;
-		if (x == y->end()){
-			y++;
-			if (y == _floor.end())
-				break;
-			x = y->begin();
-		}
-
-	}
-	draw_all();
-	std::cout << "game: map loaded\n";
-}
-
 void	game::save_game(const std::string &filename)
 {
 	std::ofstream	file;
@@ -423,48 +481,15 @@ void	game::save_game(const std::string &filename)
 	if (!file.is_open())
 		throw exception("Impossible to write the save");
 	save_map(file);
-	if (_current)
-		_current->save_player(file);
+	for (auto &p : _players)
+		p->save_player(file);
 	file.close();
 	std::cout << "game: saved\n";
 }
 
-void	game::dispatch_load(const std::string &param, const std::string &arg)
-{
-	if (param.compare("MAP") == 0)
-		load_map(arg);
-}
-
-void	game::load_game(const std::string &filename)
-{
-	std::ifstream	file;
-	std::string	line;
-	std::size_t	pos;
-	std::string	param;
-	std::string	arg;
-
-	std::cout << "game: loading...\n";
-	file.open(filename);
-	if (!file.is_open())
-		throw exception("Impossible to load the save");
-	while (std::getline(file, line)){
-		try{
-			pos = line.find('=');
-			if (pos == std::string::npos)
-				continue;
-			param = line.substr(0, pos);
-			arg = line.substr(pos + 1);
-			dispatch_load(param, arg);
-			if (_current)
-				_current->load_player(param, arg);
-			arg.clear();
-		}catch (const std::exception &error){
-			std::cerr << "game: " << error.what() << std::endl;
-		}
-	}
-	file.close();
-	std::cout << "game: loaded\n";
-}
+/**
+ * Get the one cellule by pos
+ **/
 
 std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *>	*game::get_floor(int x, int y)
 {
@@ -476,6 +501,15 @@ std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneN
 	}
 	return (nullptr);
 }
+
+std::list<std::list<TYPE_FLOOR>>	&game::get_floors()
+{
+	return (_floor);
+}
+
+/**
+ * Get a list of player by pos x/y
+ **/
 
 std::list<player *>	game::get_player_by_pos(int x, int y)
 {
@@ -490,7 +524,31 @@ std::list<player *>	game::get_player_by_pos(int x, int y)
 	return (result);
 }
 
+/**
+ * All getter
+ **/
+
 std::list<bomb *>	&game::get_bombs()
 {
 	return (_bombs);
+}
+
+player	*game::get_player()
+{
+	return (_current);
+}
+
+bool	game::is_break() const
+{
+	return (_break);
+}
+
+const std::string	game::get_text()
+{
+	std::string	result;
+
+	for (int i = 0;_text && _text->getText() && _text->getText()[i];i++){
+		result += _text->getText()[i];
+	}
+	return (result);
 }

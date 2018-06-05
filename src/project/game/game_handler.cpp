@@ -87,22 +87,27 @@ bool	game_handler::key_handler(const irr::SEvent& event)
 bool	game_handler::move_handler(int key)
 {
 	player	*target = _game.get_player();
+	irr::scene::ISceneNode *test;
+	auto	x = target->get_parent()->get_floor(target->get_position().X, target->get_position().Y);
+	auto	tmp = x;
 
 	switch (key){
-		case irr::KEY_UP:
-		target->move_to(irr::core::position2di(target->get_position().X, 28));
-		break;
-
 		case irr::KEY_DOWN:
-		target->move_to(irr::core::position2di(target->get_position().X, 1));
+		case irr::KEY_UP:
+		do {
+			tmp = x;
+			x = target->get_parent()->get_floor(target->get_position().X, std::get<1>(*x) + (key == irr::KEY_UP ? 1 : -1));
+		} while (std::get<2>(*x) <= GroundType::FIRE);
+		target->move_to(irr::core::position2di(target->get_position().X, std::get<1>(*tmp)));
 		break;
 
 		case irr::KEY_LEFT:
-		target->move_to(irr::core::position2di(28, target->get_position().Y));
-		break;
-
 		case irr::KEY_RIGHT:
-		target->move_to(irr::core::position2di(1, target->get_position().Y));
+		do {
+			tmp = x;
+			x = target->get_parent()->get_floor(std::get<0>(*x) + (key == irr::KEY_LEFT ? 1 : -1), std::get<1>(*x));
+		} while (std::get<2>(*x) <= GroundType::FIRE);
+		target->move_to(irr::core::position2di(std::get<0>(*tmp), target->get_position().Y));
 		break;
 		
 		case irr::KEY_SPACE:

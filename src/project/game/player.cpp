@@ -13,8 +13,9 @@
 #include <fstream>
 #include <memory>
 
-player::player(game *parent, irr::IrrlichtDevice *graphic, config *config) : _graphic(graphic), _config(config),
-_anim(irr::scene::EMAT_STAND), _rotate(0, 0, 0), _break(false), _design(nullptr), _bomb(nullptr), _parent(parent)
+player::player(std::size_t id, game *parent, irr::IrrlichtDevice *graphic, config *config) : _graphic(graphic), _config(config),
+_anim(irr::scene::EMAT_STAND), _rotate(0, 0, 0), _break(false), _design(nullptr), _bomb(nullptr), _parent(parent), _id(id), _alive(true),
+_camera(nullptr)
 {
 	std::size_t	mid = _config->GAME_AREA / 2;
 
@@ -38,15 +39,21 @@ void	player::dead()
 {
 	if (_design)
 		_design->remove();
+	if (_camera)
+		_camera->remove();
+	_camera = nullptr;
 	_design = nullptr;
+	_alive = false;
 }
 
 void	player::spawn()
 {
 	irr::scene::IAnimatedMesh	*mesh = nullptr;
-	float	size = 0.5f * _config->GAME_SCALE;
+	float	size = 0.3f * _config->GAME_SCALE;
 	irr::core::vector3df	old = _target;
 
+	if (!_alive)
+		return;
 	mesh = _smgr->getMesh("ressources/skin/sydney.md2");
 	if (!mesh)
 		throw exception("Impossible to load mesh");
@@ -72,8 +79,11 @@ void	player::refresh()
 		play();
 		_break = false;
 	}
-	if (_design)
-		_last = _design->getPosition();
+	_last = _design->getPosition();
+	if (_camera){
+		_camera->setPosition(irr::core::vector3df(_last.X - _config->TILE_SIZE * 4, _config->TILE_SIZE * 4, _last.Z));
+		_camera->setTarget(_last);
+	}
 	if (_anim == irr::scene::EMAT_RUN && _last.X == _target.X && _last.Z == _target.Z){
 		_anim = irr::scene::EMAT_STAND;
 		_design->setMD2Animation(_anim);
@@ -86,7 +96,6 @@ void	player::bomb_available()
 {
 	if (!_bomb)
 		return;
-	//_parent->get_bombs().remove(_bomb);
 	_bomb = nullptr;
 }
 
@@ -163,8 +172,9 @@ void	player::save_player(std::ofstream &file)
 	irr::core::position2di	pos = get_position();
 
 	std::cout << "player: saving...\n";
-	file << "P1_POS=";
+	file << "P" << _id << "_POS=";
 	file << pos.X << "," << pos.Y << std::endl;
+	file << "P" << _id << "_ALIVE=" << (_alive ? "1" : "0") << std::endl;
 	std::cout << "player: saved\n";
 }
 
@@ -172,18 +182,18 @@ void	player::load_player(const std::string &param, const std::string &arg)
 {
 	std::size_t	pos;
 
-	std::cout << "player: new param\n";
-	if (param.at(0) != 'P' || param.at(2) != '_')
-		return;
-	if (param.substr(3).compare("POS") == 0){
+	std::cout << "player: new param - " << param << "\n";
+	if (param.compare("POS") == 0){
 		if ((pos = arg.find(',')) == std::string::npos)
 			return;
 		set_position(irr::core::position2di(std::atoi(arg.substr(0, pos).c_str()), std::atoi(arg.substr(pos + 1).c_str())));
-	}
+	} else if (param.compare("ALIVE") == 0 && arg.compare("0") == 0)
+		_alive = false;
 }
 
 void	player::set_position(const irr::core::position2di &pos)
 {
+	std::cout << "player: new pos\n";
 	_target = utils::convert_position(pos, *_config);
 	_last = _target;
 	if (_design)
@@ -208,4 +218,23 @@ void	player::drop_bomb()
 game	*player::get_parent() const
 {
 	return (_parent);
+}
+
+const std::size_t	player::get_id() const
+{
+	return (_id);
+}
+
+void	player::set_camera()
+{
+	if (_camera)
+		return;
+	_camera = _smgr->addCameraSceneNode();
+	_camera->setPosition(irr::core::vector3df(_last.X - _config->TILE_SIZE * 4, _config->TILE_SIZE * 4, _last.Z));
+	_camera->setTarget(_last);
+}
+
+bool	player::is_alive() const
+{
+	return (_alive);
 }
