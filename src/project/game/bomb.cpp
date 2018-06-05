@@ -113,8 +113,15 @@ void	bomb::explode()
 {
 	irr::core::position2di	pos = utils::convert_vector(_design->getPosition(), *_config);
 	TYPE_FLOOR	*ground = nullptr;
+	float		vol = get_volume();
+	irrklang::ISound	*sound = nullptr;
 
 	std::cout << "bomb: exploding...\n";
+	if (vol > 0){
+		sound = _parent->get_parent()->get_project().get_sound()->play2D("ressources/sounds/explosion.mp3");
+		if (sound)
+			sound->setVolume(vol);
+	}
 	_exploded = true;
 	for (int i = 0;i < 4;i += 1){
 		pos.X += i % 2 - 2 * (i == 3);
@@ -128,4 +135,23 @@ void	bomb::explode()
 	change_to_fire(ground);
 	_design = std::get<4>(*ground);
 	std::cout << "bomb: exploded\n";
+}
+
+float	bomb::get_volume()
+{
+	player	*current = _parent->get_parent()->get_current();
+	irr::core::position2di	pos = current->get_position();
+	irr::core::position2di	own = utils::convert_vector(_design->getPosition(), *_config);
+	float		distance = 1.0f;
+	double		cell_x = abs(pos.X - own.X);
+	double		cell_y = abs(pos.Y - own.Y);
+	double		max = (_config->TILE_COUNT - 2) / 2;
+
+	if (cell_x == 0 && cell_y == 0)
+		return (1);
+	else if (cell_x > max || cell_y > max)
+		return (0);
+	distance -= (cell_x + cell_y) / max;
+	std::cout << "bomb: sound - " << distance << std::endl;
+	return (distance);
 }

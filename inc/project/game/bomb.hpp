@@ -9,6 +9,7 @@
 	#define BOMB_HPP_
 
 	#include "irrlicht/irrlicht.h"
+	#include "irrklang/irrKlang.h"
 	#include "project/config.hpp"
 class	player;
 	#include "project/game/player.hpp"
@@ -30,6 +31,8 @@ private:
 	void	change_to_fire(std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *> *floor);
 	void	kill();
 	void	kill_by_list(std::list<player *> &list);
+
+	float	get_volume();
 
 	std::list<std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *> *>	_fires;
 
