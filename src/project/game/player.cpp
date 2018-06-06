@@ -36,6 +36,7 @@ player::~player()
 
 void	player::dead()
 {
+	stop_sound();
 	if (_design)
 		_design->remove();
 	if (_camera)
@@ -71,11 +72,11 @@ void	player::spawn()
 
 void	player::refresh()
 {
+	if (!_design || !_alive)
+		return;
 	if (_break)
 		play();
 	_break = false;
-	if (!_design)
-		return;
 	if (_ia)
 		_ia->run();
 	_last = irr::core::vector3df(_design->getPosition().X + _config->TILE_SIZE / 2, _design->getPosition().Y, _design->getPosition().Z + _config->TILE_SIZE / 2);
@@ -85,16 +86,12 @@ void	player::refresh()
 	}
 	if (_sound)
 		_sound->setVolume(get_volume());
-	if (_anim == irr::scene::EMAT_RUN && _last.X == _target.X && _last.Z == _target.Z){
+	if (_anim == irr::scene::EMAT_RUN && _design->getPosition().X == _target.X && _design->getPosition().Z == _target.Z){
 		_anim = irr::scene::EMAT_STAND;
 		_design->setMD2Animation(_anim);
 		_design->setRotation(_rotate);
 		_moving = false;
-		if (_sound){
-			_sound->stop();
-			_sound->drop();
-			_sound = nullptr;
-		}
+		stop_sound();
 		std::cout << "player: arrived\n";
 	}
 }
@@ -113,7 +110,7 @@ void	player::move_to(const irr::core::position2di &pos)
 	irr::core::position2di	player = get_position();
 	irr::scene::ISceneNodeAnimator	*anim = nullptr;
 
-	if (!_design)
+	if (!_design || !_alive)
 		return;
 	std::cout << "player: moving...\n";
 	if ((pos.X == old.X && pos.Y == old.Y) ||
@@ -159,11 +156,7 @@ void	player::stop()
 	_design->removeAnimators();
 	_design->setMD2Animation(irr::scene::EMAT_STAND);
 	_target = _design->getPosition();
-	if (_sound){
-		_sound->stop();
-		_sound->drop();
-		_sound = nullptr;
-	}
+	stop_sound();
 }
 
 void	player::pause()
@@ -277,6 +270,15 @@ ia	*player::get_ia()
 bool	player::is_moving() const
 {
 	return (_moving);
+}
+
+void	player::stop_sound()
+{
+	if (_sound){
+		_sound->stop();
+		_sound->drop();
+		_sound = nullptr;
+	}
 }
 
 float	player::get_volume()

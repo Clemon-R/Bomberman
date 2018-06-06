@@ -31,13 +31,7 @@ public:
 	void	stop();
 
 	void	move_to(const irr::core::position2di &pos);
-
-	irr::core::position2di	get_position() const;
-	void	set_position(const irr::core::position2di &pos);
-	irr::core::position2di	get_real_position() const;
-	game	*get_parent() const;
-	void	set_rotation(const std::size_t dir);
-	const std::size_t	get_id() const;
+	void	stop_sound();
 
 	void	save_player(std::ofstream &file);
 	void	load_player(const std::string &param, const std::string &arg);
@@ -53,6 +47,12 @@ public:
 	ia	*get_ia();
 	void	set_ia();
 	bool	is_moving() const;
+	irr::core::position2di	get_position() const;
+	void	set_position(const irr::core::position2di &pos);
+	irr::core::position2di	get_real_position() const;
+	game	*get_parent() const;
+	void	set_rotation(const std::size_t dir);
+	const std::size_t	get_id() const;
 private:
 	void	play();
 

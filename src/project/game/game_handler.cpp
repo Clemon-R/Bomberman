@@ -66,7 +66,7 @@ bool	game_handler::window_handler(const irr::SEvent& event)
 
 bool	game_handler::key_handler(const irr::SEvent& event)
 {
-	player	*target = _game.get_player();
+	player	*target = _game.get_current();
 
 	if (!target)
 		return (true);
@@ -87,7 +87,7 @@ bool	game_handler::key_handler(const irr::SEvent& event)
 
 bool	game_handler::move_handler(int key)
 {
-	player	*target = _game.get_player();
+	player	*target = _game.get_current();
 	irr::scene::ISceneNode *test;
 	auto	x = target->get_parent()->get_floor(target->get_position().X, target->get_position().Y);
 	auto	tmp = x;

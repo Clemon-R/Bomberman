@@ -178,8 +178,8 @@ void	game::run()
 	for (auto &player : _players)
 		if (player->is_alive())
 			player->refresh();
-		else if (!_camera)
-			set_camera();
+	if (_current && !_current->is_alive() && !_camera)
+		set_camera();
 }
 
 /**
@@ -582,9 +582,9 @@ std::list<bomb *>	&game::get_bombs()
 	return (_bombs);
 }
 
-player	*game::get_player()
+std::list<std::unique_ptr<player>>	&game::get_players()
 {
-	return (_current);
+	return (_players);
 }
 
 bool	game::is_break() const

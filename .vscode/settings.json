@@ -39,6 +39,7 @@
 		"*.ipp": "cpp",
 		"strstream": "cpp",
 		"cinttypes": "cpp",
-		"typeindex": "cpp"
+		"typeindex": "cpp",
+		"list": "cpp"
 	}
 }

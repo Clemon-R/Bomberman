@@ -23,15 +23,11 @@ class	game_handler;
 	#include <tuple>
 	#include <memory>
 
-using	TYPE_FLOOR = std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *>;
-
 class	game : public interface
 {
 public:
 	game(irr::IrrlichtDevice *graphic, config *config, project *project, bool draw = true);
 	~game();
-
-	player	*get_player();
 
 	void	run() override final;
 	void	pause();
@@ -53,6 +49,7 @@ public:
 	std::list<std::list<TYPE_FLOOR>>	&get_floors();
 	std::list<bomb *>	&get_bombs();
 	std::list<player *>	get_player_by_pos(int x, int y);
+	std::list<std::unique_ptr<player>>	&get_players();
 	bool	is_break() const;
 	void	set_camera();
 

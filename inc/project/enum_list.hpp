@@ -36,4 +36,6 @@ enum	CodeEventGame
 	SAVEGAME,
 	BREAK
 };
+
+using	TYPE_FLOOR = std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *>;
 #endif /* !ENUM_LIST_HPP_ */
