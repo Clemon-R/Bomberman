@@ -90,5 +90,6 @@ private:
 	config				*_config;
 	project				*_project;
 	irr::gui::IGUIEditBox		*_text;
+	server				*_server;
 };
 #endif /* !GAME_HPP_ */

@@ -72,7 +72,5 @@ private:
 	irr::core::vector3df			_rotate;
 	irr::scene::EMD2_ANIMATION_TYPE		_anim;
 	irr::scene::ICameraSceneNode		*_camera;
-
-	game					*_parent;
 };
 #endif /* !PLAYER_HPP_ */

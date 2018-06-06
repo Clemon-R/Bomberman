@@ -17,9 +17,18 @@ class server
 public:
 	server();
 	~server();
+	void	run_poll();
 private:
 	void	init_server();
+	void	add_client();
+
 	int	_socket;
 	struct sockaddr_in	_address;
+
+	struct pollfd		_fd_table[4];
+	int	_fd_table_size;
+	int	_fd_table_index;
+
+	int	_poll_return;
 };
 #endif
