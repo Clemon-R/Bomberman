@@ -23,7 +23,8 @@ enum	CodeEventGui
 	PLAY,
 	LOAD,
 	CHARGE,
-	BACK
+	BACK,
+	MULTIPLAYER
 };
 
 enum	CodeEventGame

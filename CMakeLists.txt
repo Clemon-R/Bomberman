@@ -19,6 +19,7 @@ set(BOMBERMAN_GAME
 	src/project/game/player.cpp
 	src/project/game/bomb.cpp
 	src/project/game/server.cpp
+	src/project/game/ia.cpp
 )
 
 set(BOMBERMAN_PROJECT
@@ -51,7 +52,8 @@ if (UNIX)
 		set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}/bin/bomberman")
 	endif (TYPE_BUILD STREQUAL "RELEASE")
 	target_link_libraries(bomberman ${CMAKE_SOURCE_DIR}/libIrrlicht.so.1.8)
-	install(FILES libIrrlicht.so.1.8 DESTINATION .)
+	target_link_libraries(bomberman ${CMAKE_SOURCE_DIR}/libIrrKlang.so)
+	install(FILES libIrrlicht.so.1.8 libIrrKlang.so ikpFlac.so ikpMP3.so DESTINATION .)
 endif (UNIX)
 if (WIN32)
 	SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-subsystem,windows")
@@ -59,7 +61,8 @@ if (WIN32)
 		set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/bin/win")
 	endif (TYPE_BUILD STREQUAL "DEBUG")
 	target_link_libraries(bomberman ${CMAKE_SOURCE_DIR}/Irrlicht.dll)
-	install(FILES Irrlicht.dll DESTINATION .)
+	target_link_libraries(bomberman ${CMAKE_SOURCE_DIR}/irrKlang.dll)
+	install(FILES Irrlicht.dll irrKlang.dll ikpFlac.dll ikpMP3.dll DESTINATION .)
 endif (WIN32)
 
 install(TARGETS bomberman DESTINATION .)

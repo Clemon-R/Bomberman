@@ -38,8 +38,6 @@ public:
 	void	pause();
 	void	play();
 
-	bool	is_break() const;
-
 	void	game_menu();
 	void	break_menu();
 	void	save_menu();
@@ -51,16 +49,21 @@ public:
 	void	save_game(const std::string &filename);
 	void	load_game(const std::string &filename);
 
-	void	set_camera();
 
 	TYPE_FLOOR	*get_floor(int x, int y);
 	std::list<std::list<TYPE_FLOOR>>	&get_floors();
 	std::list<bomb *>	&get_bombs();
 	std::list<player *>	get_player_by_pos(int x, int y);
+	bool	is_break() const;
+	void	set_camera();
 
 	void	draw_all();
 	irr::scene::IMeshSceneNode	*add_wall(TYPE_FLOOR &floor);
+	project	&get_project();
+	player	*get_current();
 private:
+	void	create_players();
+
 	void	full_corner_remove();
 	void	corner_remove();
 

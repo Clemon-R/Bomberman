@@ -30,6 +30,8 @@ bool	game_handler::window_handler(const irr::SEvent& event)
 {
 	irr::s32	caller = event.GUIEvent.Caller->getID();
 
+	std::cout << "game_handler: new action\n";
+	_game.get_project().get_sound()->play2D("ressources/sounds/btn.mp3");
 	switch (caller){
 		case CodeEventGame::BREAK:
 			_game.pause();
@@ -52,7 +54,6 @@ bool	game_handler::window_handler(const irr::SEvent& event)
 			break;
 
 		case CodeEventGame::SAVEGAME:
-			//printf("game: text - %s\n", _game.get_text().c_str());
 			_game.save_game(_game.get_text());
 			_game.break_menu();
 			break;
@@ -91,6 +92,7 @@ bool	game_handler::move_handler(int key)
 	auto	x = target->get_parent()->get_floor(target->get_position().X, target->get_position().Y);
 	auto	tmp = x;
 
+	std::cout << "game_handler: new key event\n";
 	switch (key){
 		case irr::KEY_DOWN:
 		case irr::KEY_UP:

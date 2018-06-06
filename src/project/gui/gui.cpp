@@ -18,13 +18,20 @@ _config(config), _driver(nullptr), _env(nullptr), _handler(std::make_unique<gui_
 	_env = _graphic->getGUIEnvironment();
 	if (!_driver || !_env)
 		throw exception("Impossible to find the driver");
+	_graphic->setEventReceiver(_handler.get());
 	main_menu();
+	_sound = _project->get_sound()->play2D("ressources/sounds/gui.mp3", true, false, true);
 	std::cout << "gui: initiated\n";
 }
 
 gui::~gui()
 {
 	std::cout << "gui: destroying...\n";
+	_handler.reset(nullptr);
+	if (_sound){
+		_sound->stop();
+		_sound->drop();
+	}
 	std::cout << "gui: destroyed\n";
 }
 
@@ -46,34 +53,56 @@ void	gui::main_menu()
 	irr::video::ITexture	*img = database::load_img("btn_exit", ".png");
 	irr::video::ITexture	*img1 = database::load_img("btn_play", ".png");
 	irr::video::ITexture	*img2 = database::load_img("btn_load", ".png");
+	irr::video::ITexture	*img3 = database::load_img("btn_multiplayer", ".png");
+	std::size_t		x = 0;
+	std::size_t		y = 0;
 
-	if (!img || !img1 || !img2)
+	if (!img || !img1 || !img2 || !img3)
 		throw exception("Impossible to load image");
+	std::cout << "gui: main menu\n";
+	x = (_config->WINDOW_WIDTH - img->getSize().Width) / 2;
+	y = _config->WINDOW_HEIGHT / 2;
 	_env->clear();
-	utils::add_button(_env, img, irr::core::position2di((_config->WINDOW_WIDTH - img->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 + img->getSize().Height * 2), CodeEventGui::EXIT);
-	utils::add_button(_env, img1, irr::core::position2di((_config->WINDOW_WIDTH - img1->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 - img1->getSize().Height), CodeEventGui::PLAY);
-	utils::add_button(_env, img2, irr::core::position2di((_config->WINDOW_WIDTH - img2->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 + img2->getSize().Height / 2), CodeEventGui::LOAD);
-	_graphic->setEventReceiver(_handler.get());
+	utils::add_button(_env, img1, irr::core::position2di(x, y - img1->getSize().Height), CodeEventGui::PLAY);
+	utils::add_button(_env, img3, irr::core::position2di(x, y + img3->getSize().Height / 2), CodeEventGui::MULTIPLAYER);
+	utils::add_button(_env, img2, irr::core::position2di(x, y + img2->getSize().Height * 2), CodeEventGui::LOAD);
+	utils::add_button(_env, img, irr::core::position2di(x, y + img->getSize().Height * 3.5), CodeEventGui::EXIT);
 }
 
 void	gui::load_menu()
 {
 	irr::video::ITexture	*img = database::load_img("btn_load", ".png");
 	irr::video::ITexture	*img1 = database::load_img("btn_back", ".png");
-	std::size_t	x = 0;
+	std::size_t		x = 0;
+	std::size_t		y = 0;
 
 	if (!img || !img1)
 		throw exception("Impossible to load image");
+	std::cout << "gui: load menu\n";
+	x = (_config->WINDOW_WIDTH - img1->getSize().Width) / 2;
+	y = _config->WINDOW_HEIGHT / 2;
+	_env->clear();
+	_text = _env->addEditBox(L"", irr::core::recti(x, y - img1->getSize().Height, x + img->getSize().Width, y));
+	utils::add_button(_env, img, irr::core::position2di(x, y + img->getSize().Height / 2), CodeEventGui::CHARGE);
+	utils::add_button(_env, img1, irr::core::position2di(x, y + img1->getSize().Height * 2), CodeEventGui::BACK);
+}
+
+void	gui::multiplayer_menu()
+{
+	irr::video::ITexture	*img1 = database::load_img("btn_back", ".png");
+	std::size_t	x = 0;
+
+	if (!img1)
+		throw exception("Impossible to load image");
+	std::cout << "gui: multiplayer menu\n";
 	x = (_config->WINDOW_WIDTH - img1->getSize().Width) / 2;
 	_env->clear();
-	_graphic->setEventReceiver(_handler.get());
-	_text = _env->addEditBox(L"", irr::core::recti(x, _config->WINDOW_HEIGHT / 2 - img1->getSize().Height, x + img->getSize().Width, _config->WINDOW_HEIGHT / 2));
-	utils::add_button(_env, img, irr::core::position2di(x, _config->WINDOW_HEIGHT / 2 + img->getSize().Height / 2), CodeEventGui::CHARGE);
-	utils::add_button(_env, img1, irr::core::position2di(x, _config->WINDOW_HEIGHT / 2 + img1->getSize().Height * 2), CodeEventGui::BACK);
+	utils::add_button(_env, img1, irr::core::position2di(x, _config->WINDOW_HEIGHT / 2), CodeEventGui::BACK);
 }
 
 void	gui::play_game()
 {
+	std::cout << "gui: starting game...\n";
 	_graphic->setEventReceiver(nullptr);
 	_project->set_interface(new game(_graphic, _config, _project));
 }
@@ -82,6 +111,7 @@ void	gui::load_game(const std::string &filename)
 {
 	game	*current = nullptr;
 
+	std::cout << "gui: loading a game...\n";
 	_graphic->setEventReceiver(nullptr);
 	current = new game(_graphic, _config, _project, false);
 	if (!current)
@@ -98,4 +128,9 @@ const std::string	gui::get_text()
 		result += _text->getText()[i];
 	}
 	return (result);
+}
+
+project	&gui::get_project()
+{
+	return (*_project);
 }

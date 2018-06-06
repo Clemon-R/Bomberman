@@ -28,12 +28,7 @@ _break(false), _current(nullptr), _project(project), _handler(new game_handler(g
 	if (!_driver || !_env || !_smgr)
 		throw exception("Impossible to find the driver");
 	generate_floor();
-	for (int i = 0;i < 4;i += 1){
-		_players.push_back(std::make_unique<player>(i, this, _graphic, _config));
-		_players.back()->set_position(irr::core::position2di(i % 2 * (_config->TILE_COUNT - 3) + 1, i / 2 * (_config->TILE_COUNT - 3) + 1));
-		_players.back()->set_rotation(i / 2 * 180);
-	}
-	_current = _players.back().get();
+	create_players();
 	game_menu();
 	if (draw)
 		draw_all();
@@ -50,21 +45,29 @@ game::~game()
 	std::cout << "game: destroyed\n";
 }
 
+/**
+ * All menu
+ **/
+
 void	game::break_menu()
 {
 	irr::video::ITexture	*bg = database::load_img("break", ".png");
 	irr::video::ITexture	*img = database::load_img("btn_leave", ".png");
 	irr::video::ITexture	*img1 = database::load_img("btn_continue", ".png");
 	irr::video::ITexture	*img2 = database::load_img("btn_save", ".png");
+	std::size_t		x = 0;
+	std::size_t		y = 0;
 
-	std::cout << "game: break menu\n";
 	if (!img || !bg || !img1 || !img2)
 		throw exception("Impossible to load image");
+	std::cout << "game: break menu\n";
+	x = (_config->WINDOW_WIDTH - img1->getSize().Width) / 2;
+	y = _config->WINDOW_HEIGHT / 2;
 	_env->clear();
 	_env->addImage(bg, irr::core::position2d<irr::s32>(0, 0));
-	utils::add_button(_env, img1, irr::core::position2di((_config->WINDOW_WIDTH - img1->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 - img1->getSize().Height), CodeEventGame::CONTINU);
-	utils::add_button(_env, img2, irr::core::position2di((_config->WINDOW_WIDTH - img2->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 + img2->getSize().Height / 2), CodeEventGame::SAVE);
-	utils::add_button(_env, img, irr::core::position2di((_config->WINDOW_WIDTH - img->getSize().Width) / 2, _config->WINDOW_HEIGHT / 2 + img->getSize().Height * 2), CodeEventGame::LEAVE);
+	utils::add_button(_env, img1, irr::core::position2di(x, y - img1->getSize().Height), CodeEventGame::CONTINU);
+	utils::add_button(_env, img2, irr::core::position2di(x, y + img2->getSize().Height / 2), CodeEventGame::SAVE);
+	utils::add_button(_env, img, irr::core::position2di(x, y + img->getSize().Height * 2), CodeEventGame::LEAVE);
 }
 
 void	game::save_menu()
@@ -76,6 +79,7 @@ void	game::save_menu()
 
 	if (!bg || !img || !img1)
 		throw exception("Impossible to load image");
+	std::cout << "game: save menu\n";
 	x = (_config->WINDOW_WIDTH - img1->getSize().Width) / 2;
 	_env->clear();
 	_env->addImage(bg, irr::core::position2d<irr::s32>(0, 0));
@@ -88,12 +92,17 @@ void	game::game_menu()
 {
 	irr::video::ITexture	*img = database::load_img("btn_break", ".png");
 
-	std::cout << "game: game menu\n";
 	if (!img)
 		throw exception("Impossible to load image");
+	std::cout << "game: game menu\n";
 	_env->clear();
 	utils::add_button(_env, img, irr::core::position2di(0, 0), CodeEventGame::BREAK);
 }
+
+/**
+ * End menu
+ * Action back to menu
+ **/
 
 void	game::back_to_main()
 {
@@ -102,6 +111,58 @@ void	game::back_to_main()
 	_graphic->setEventReceiver(nullptr);
 	_project->set_interface(new gui(_graphic, _config, _project));
 }
+
+void	game::create_players()
+{
+	std::cout << "game: creating all players...\n";
+	for (int i = 0;i < 4;i += 1){
+		_players.push_back(std::make_unique<player>(i, this, _graphic, _config));
+		_players.back()->set_position(irr::core::position2di(i % 2 * (_config->TILE_COUNT - 3) + 1, i / 2 * (_config->TILE_COUNT - 3) + 1));
+		_players.back()->set_rotation(i / 2 * 180);
+		if (i < 3)
+			_players.back()->set_ia();
+	}
+	_current = _players.back().get();
+	std::cout << "game: players created\n";
+}
+
+void	game::set_camera()
+{
+	std::size_t			mid = _config->GAME_AREA / 2;
+
+	std::cout << "game: adding the camera...\n";
+	_camera = _smgr->addCameraSceneNode();
+	if (!_camera)
+		return;
+	_camera->setPosition(irr::core::vector3df(mid - _config->TILE_SIZE / 2, _config->GAME_AREA * 0.74, mid));
+	_camera->setTarget(irr::core::vector3df(mid - _config->TILE_SIZE / 2, 0, mid));
+	std::cout << "game: camera added\n";
+}
+
+
+irr::scene::IMeshSceneNode	*game::add_wall(std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *> &floor)
+{
+	irr::scene::IMeshSceneNode	*current = nullptr;
+
+	if (std::get<2>(floor) == GroundType::NONE)
+		return (nullptr);
+	current =  _smgr->addCubeSceneNode(_config->TILE_SIZE);
+	if (!current)
+		return (nullptr);
+	current->setPosition(irr::core::vector3df(
+		std::get<1>(floor) * _config->TILE_SIZE,
+		_config->TILE_SIZE,
+		std::get<0>(floor) * _config->TILE_SIZE
+	));
+	current->setMaterialTexture(0, std::get<3>(floor));
+	current->setMaterialFlag(irr::video::EMF_LIGHTING, false);
+	std::get<4>(floor) = current;
+	return (current);
+}
+
+/**
+ * Run call all time by frame
+ **/
 
 void	game::run()
 {
@@ -121,6 +182,10 @@ void	game::run()
 		else if (!_camera)
 			set_camera();
 }
+
+/**
+ * Generator of random floor
+ **/
 
 void	game::generate_floor()
 {
@@ -184,6 +249,7 @@ void    game::corner_remove()
 	auto	y = _floor.begin();
 	auto	x = y->begin();
 	
+	std::cout << "game: removing cell for players...\n";
 	for (;y != _floor.end();y++){
 		x = y->begin();
 		for (;x != y->end();x++){
@@ -199,6 +265,7 @@ void    game::corner_remove()
 		}
 	}
 	full_corner_remove();
+	std::cout << "game: cell done\n";
 }
 
 void     game::generate_map()
@@ -210,56 +277,29 @@ void     game::generate_map()
 
 	if (!brick)
 		throw exception("Impossible to load image");
+	std::cout << "game: adding all random wall/bric...\n";
 	for (;y != _floor.end();y++){
 		for (x = y->begin();x != y->end();x++){
-			if (std::get<2>(*x) != GroundType::NONE)
+			if (std::get<0>(*x) == 0 || std::get<1>(*x) == 0 || std::get<0>(*x) == _config->TILE_COUNT - 1 || std::get<1>(*x) == _config->TILE_COUNT - 1)
 				continue;
-			if (rand() % 4 == 1){
+			if (std::get<0>(*x) % 2 == 0 || std::get<1>(*x) % 2 == 0){
+				//std::get<2>(*x) = GroundType::BRICK;
+				//std::get<3>(*x) = brick;
+				continue;
+			} else {
 				std::get<2>(*x) = GroundType::WALL;
 				std::get<3>(*x) = wall;
 				continue;
 			}
-			std::get<2>(*x) = GroundType::BRICK;
-			std::get<3>(*x) = brick;
+
 		}
 	}
+	std::cout << "game: random done\n";
 	corner_remove();
 }
 
-void	game::set_camera()
-{
-	irr::scene::ICameraSceneNode	*cam = _smgr->addCameraSceneNode();
-	std::size_t			mid = _config->GAME_AREA / 2;
-
-	std::cout << "game: adding the camera...\n";
-	cam->setPosition(irr::core::vector3df(mid - _config->TILE_SIZE / 2, _config->GAME_AREA * 0.74, mid));
-	//cam->setPosition(irr::core::vector3df(mid / 2, _config->GAME_AREA * 0.74, mid));
-	cam->setTarget(irr::core::vector3df(mid - _config->TILE_SIZE / 2, 0, mid));
-	std::cout << "game: camera added\n";
-}
-
-
-irr::scene::IMeshSceneNode	*game::add_wall(std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *> &floor)
-{
-	irr::scene::IMeshSceneNode	*current = nullptr;
-
-	if (std::get<2>(floor) == GroundType::NONE)
-		return (nullptr);
-	current =  _smgr->addCubeSceneNode(_config->TILE_SIZE);
-	if (!current)
-		return (nullptr);
-	current->setPosition(irr::core::vector3df(
-		std::get<1>(floor) * _config->TILE_SIZE,
-		_config->TILE_SIZE,
-		std::get<0>(floor) * _config->TILE_SIZE
-	));
-	current->setMaterialTexture(0, std::get<3>(floor));
-	current->setMaterialFlag(irr::video::EMF_LIGHTING, false);
-	std::get<4>(floor) = current;
-	return (current);
-}
-
 /**
+ * End generator
  * Drawing the ground
  **/
 
@@ -345,8 +385,8 @@ void	game::draw_all()
 void	game::pause()
 {
 	std::cout << "game: pause\n";
-	if (_current)
-		_current->pause();
+	for (auto &p : _players)
+		p->pause();
 	break_menu();
 	_break = true;
 }
@@ -551,4 +591,14 @@ const std::string	game::get_text()
 		result += _text->getText()[i];
 	}
 	return (result);
+}
+
+project	&game::get_project()
+{
+	return (*_project);
+}
+
+player	*game::get_current()
+{
+	return (_current);
 }

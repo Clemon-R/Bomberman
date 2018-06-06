@@ -28,6 +28,8 @@ bool	gui_handler::window_handler(const irr::SEvent& event)
 {
 	irr::s32	caller = event.GUIEvent.Caller->getID();
 
+	std::cout << "gui_handler: new action\n";
+	_gui.get_project().get_sound()->play2D("ressources/sounds/btn.mp3");
 	switch (caller){
 		case CodeEventGui::EXIT:
 			_graphic->closeDevice();
@@ -47,6 +49,10 @@ bool	gui_handler::window_handler(const irr::SEvent& event)
 
 		case CodeEventGui::BACK:
 			_gui.main_menu();
+			break;
+
+		case CodeEventGui::MULTIPLAYER:
+			_gui.multiplayer_menu();
 			break;
 
 		default:

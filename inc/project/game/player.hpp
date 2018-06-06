@@ -10,15 +10,15 @@
 
 	#include "project/game/bomb.hpp"
 	#include "irrlicht/irrlicht.h"
-	#include "irrlicht/irrTypes.h"
-	#include "irrlicht/ITimer.h"
+	#include "irrklang/irrKlang.h"
 	#include "project/config.hpp"
 class	bomb;
 	#include "project/game/bomb.hpp"
 class	game;
 	#include "project/game/game.hpp"
+class	ia;
+	#include "project/game/ia.hpp"
 	#include <iostream>
-	#include <vector>
 	#include <memory>
 
 class	player
@@ -51,13 +51,20 @@ public:
 
 	void	set_camera();
 	bool	is_alive() const;
+	ia	*get_ia();
+	void	set_ia();
+	bool	is_moving() const;
 private:
 	void	play();
+
+	float	get_volume();
 
 	std::size_t	_id;
 	bomb		*_bomb;
 	bool		_break;
 	bool		_alive;
+	bool		_moving;
+	std::unique_ptr<ia>	_ia;
 
 	irr::core::vector3df			_target;
 	irr::core::vector3df			_last;
@@ -65,6 +72,7 @@ private:
 	config					*_config;
 	game					*_parent;
 	irr::IrrlichtDevice			*_graphic;
+	irrklang::ISound			*_sound;
 	irr::video::IVideoDriver		*_driver;
 	irr::scene::ISceneManager		*_smgr;
 

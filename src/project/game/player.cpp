@@ -11,11 +11,11 @@
 #include "project/database.hpp"
 #include "project/utils.hpp"
 #include <fstream>
-#include <memory>
+#include <complex>
 
 player::player(std::size_t id, game *parent, irr::IrrlichtDevice *graphic, config *config) : _graphic(graphic), _config(config),
 _anim(irr::scene::EMAT_STAND), _rotate(0, 0, 0), _break(false), _design(nullptr), _bomb(nullptr), _parent(parent), _id(id), _alive(true),
-_camera(nullptr)
+_camera(nullptr), _ia(nullptr), _moving(false), _sound(nullptr)
 {
 	std::size_t	mid = _config->GAME_AREA / 2;
 
@@ -49,7 +49,7 @@ void	player::dead()
 void	player::spawn()
 {
 	irr::scene::IAnimatedMesh	*mesh = nullptr;
-	float	size = 0.3f * _config->GAME_SCALE;
+	float			size = 0.3f * _config->GAME_SCALE;
 	irr::core::vector3df	old = _target;
 
 	if (!_alive)
@@ -66,28 +66,36 @@ void	player::spawn()
 	_design->setRotation(_rotate);
 	_design->setPosition(_last);
 	_design->setScale(irr::core::vector3df(size, size, size));
-	_target = _last;
 	if (_last.X != _target.X || _last.Z != _target.Z)
 		move_to(utils::convert_vector(old, *_config));
 }
 
 void	player::refresh()
 {
+	if (_break)
+		play();
+	_break = false;
 	if (!_design)
 		return;
-	else if (_break){
-		play();
-		_break = false;
-	}
-	_last = _design->getPosition();
+	if (_ia)
+		_ia->run();
+	_last = irr::core::vector3df(_design->getPosition().X + _config->TILE_SIZE / 2, _design->getPosition().Y, _design->getPosition().Z + _config->TILE_SIZE / 2);
 	if (_camera){
 		_camera->setPosition(irr::core::vector3df(_last.X - _config->TILE_SIZE * 4, _config->TILE_SIZE * 4, _last.Z));
 		_camera->setTarget(_last);
 	}
+	if (_sound)
+		_sound->setVolume(get_volume());
 	if (_anim == irr::scene::EMAT_RUN && _last.X == _target.X && _last.Z == _target.Z){
 		_anim = irr::scene::EMAT_STAND;
 		_design->setMD2Animation(_anim);
 		_design->setRotation(_rotate);
+		_moving = false;
+		if (_sound){
+			_sound->stop();
+			_sound->drop();
+			_sound = nullptr;
+		}
 		std::cout << "player: arrived\n";
 	}
 }
@@ -128,27 +136,40 @@ void	player::move_to(const irr::core::position2di &pos)
 		_anim = irr::scene::EMAT_RUN;
 		_design->setMD2Animation(_anim);
 		_design->setRotation(_rotate);
+		_moving = true;
+		_sound = _parent->get_project().get_sound()->play2D("ressources/sounds/run.mp3", true, false, true);
+		_sound->setVolume(get_volume());
 		std::cout << "player: start running...\n";
 	}
 }
 
 void	player::play()
 {
-	if (_design->getPosition().X != _target.X || _design->getPosition().Z != _target.Z)
-		move_to(utils::convert_vector(_target, *_config));
+	irr::core::vector3df	tmp = _target;
+
+	_target = _last;
+	if (tmp.X != _target.X || tmp.Z != _target.Z)
+		move_to(utils::convert_vector(tmp, *_config));
 }
 
 void	player::stop()
 {
 	if (!_design)
 		return;
+	std::cout << "player: stop the movement\n";
 	_design->removeAnimators();
 	_design->setMD2Animation(irr::scene::EMAT_STAND);
 	_target = _design->getPosition();
+	if (_sound){
+		_sound->stop();
+		_sound->drop();
+		_sound = nullptr;
+	}
 }
 
 void	player::pause()
 {
+	std::cout << "player: pause\n";
 	_break = true;
 	if (!_design)
 		return;
@@ -175,6 +196,7 @@ void	player::save_player(std::ofstream &file)
 	file << "P" << _id << "_POS=";
 	file << pos.X << "," << pos.Y << std::endl;
 	file << "P" << _id << "_ALIVE=" << (_alive ? "1" : "0") << std::endl;
+	file << "P" << _id << "_IA=" << (_ia ? "1" : "0") << std::endl;
 	std::cout << "player: saved\n";
 }
 
@@ -182,13 +204,15 @@ void	player::load_player(const std::string &param, const std::string &arg)
 {
 	std::size_t	pos;
 
-	std::cout << "player: new param - " << param << "\n";
+	std::cout << "player: loading param - " << param << "\n";
 	if (param.compare("POS") == 0){
 		if ((pos = arg.find(',')) == std::string::npos)
 			return;
 		set_position(irr::core::position2di(std::atoi(arg.substr(0, pos).c_str()), std::atoi(arg.substr(pos + 1).c_str())));
 	} else if (param.compare("ALIVE") == 0 && arg.compare("0") == 0)
 		_alive = false;
+	else if (param.compare("IA") == 0 && arg.compare("0") == 0)
+		_ia.reset(nullptr);
 }
 
 void	player::set_position(const irr::core::position2di &pos)
@@ -211,6 +235,7 @@ void	player::drop_bomb()
 {
 	if (_bomb)
 		return;
+	std::cout << "player: dropping a bomb\n";
 	_bomb = new bomb(this, _graphic, _config);
 	_parent->get_bombs().push_back(_bomb);
 }
@@ -229,6 +254,7 @@ void	player::set_camera()
 {
 	if (_camera)
 		return;
+	std::cout << "player: adding a camera\n";
 	_camera = _smgr->addCameraSceneNode();
 	_camera->setPosition(irr::core::vector3df(_last.X - _config->TILE_SIZE * 4, _config->TILE_SIZE * 4, _last.Z));
 	_camera->setTarget(_last);
@@ -237,4 +263,38 @@ void	player::set_camera()
 bool	player::is_alive() const
 {
 	return (_alive);
+}
+
+void	player::set_ia()
+{
+	_ia.reset(new ia(this));
+}
+
+ia	*player::get_ia()
+{
+	return (_ia.get());
+}
+
+bool	player::is_moving() const
+{
+	return (_moving);
+}
+
+float	player::get_volume()
+{
+	player	*current = _parent->get_current();
+	irr::core::position2di	pos = current->get_position();
+	irr::core::position2di	own = get_position();
+	float		distance = 1.0f;
+	double		cell_x = abs(pos.X - own.X);
+	double		cell_y = abs(pos.Y - own.Y);
+	double		max = (_config->TILE_COUNT - 2) / 2;
+
+	if (cell_x == 0 && cell_y == 0)
+		return (1);
+	else if (cell_x > max || cell_y > max)
+		return (0);
+	distance -= (cell_x + cell_y) / max;
+	std::cout << "player: sound - " << distance << std::endl;
+	return (distance);
 }

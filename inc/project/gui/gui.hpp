@@ -31,12 +31,15 @@ public:
 	
 	void	main_menu();
 	void	load_menu();
+	void	multiplayer_menu();
 
 	void	load_game(const std::string &filename);
 
 	const std::string	get_text();
+	project			&get_project();
 private:
 	irr::IrrlichtDevice	*_graphic;
+	irrklang::ISound	*_sound;
 	irr::video::IVideoDriver	*_driver;
 	irr::gui::IGUIEnvironment	*_env;
 	std::unique_ptr<gui_handler>	_handler;

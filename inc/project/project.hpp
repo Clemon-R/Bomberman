@@ -9,6 +9,7 @@
 	#define PROJECT_HPP_
 
 	#include "irrlicht/irrlicht.h"
+	#include "irrklang/irrKlang.h"
 	#include "project/config.hpp"
 class	gui;
 	#include "project/gui/gui.hpp"
@@ -29,8 +30,10 @@ public:
 	void	init_of_graphic();
 	void	run();
 	void	set_interface(interface *window);
+	irrklang::ISoundEngine	*get_sound();
 private:
 	std::unique_ptr<irr::IrrlichtDevice>	_graphic;
+	std::unique_ptr<irrklang::ISoundEngine>	_sound;
 	std::unique_ptr<config>	_config;
 	std::unique_ptr<interface>	_interface;
 };
