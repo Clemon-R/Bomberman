@@ -467,6 +467,14 @@ void	game::dispatch_load(const std::string &param, const std::string &arg)
 				p->load_player(matchs[2], arg);
 	} else if (param.compare("MAP") == 0)
 		load_map(arg);
+	else if (param.compare("CURRENT") == 0){
+		for (auto &p : _players){
+			if (p->get_id() == std::atoi(arg.c_str())){
+				_current = p.get();
+				break;
+			}
+		}
+	}
 }
 
 void	game::load_game(const std::string &filename)
@@ -523,6 +531,8 @@ void	game::save_game(const std::string &filename)
 	save_map(file);
 	for (auto &p : _players)
 		p->save_player(file);
+	if (_current)
+		file << "CURRENT=" << _current->get_id();
 	file.close();
 	std::cout << "game: saved\n";
 }
