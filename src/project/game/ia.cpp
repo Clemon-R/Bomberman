@@ -25,92 +25,153 @@ ia::~ia()
 
 void	ia::run()
 {
-	irr::core::position2di	pos = _parent->get_position();
-	std::list<irr::core::position2di>	dirs;
-	std::list<irr::core::position2di>::iterator	it;
-
-	if (_parent->is_moving())
-		_last = utils::get_milliseconds();
-	if (utils::get_milliseconds() - _last < 750)
+	if (utils::get_milliseconds() - _last < 500)
 		return;
-	_last = utils::get_milliseconds();
-	if (!_target)
+	if (!_target){
 		_target = get_target();
-	get_all_dirs_h(pos, dirs);
-	get_all_dirs_v(pos, dirs);
-	if (dirs.size() == 0 || !_target)
+		if (_target)
+			_old_pos_target = _target->get_position();
+	}
+	if (!_target)
 		return;
-	pos = get_cell_near_target(_target, dirs);
-	_parent->move_to(pos);
+	if (_path.size() == 0 || check_if_target_new_pos(_target)){
+		_path = get_dirs_by_target(_target, _parent->get_position(), true);
+		if (_path.size() == 0)
+			_path = get_dirs_by_target(_target, _parent->get_position(), false);
+		_old_pos_target = _target->get_position();
+	}
+	if (!_parent->is_moving() && _path.size() > 0){
+		std::cout << "ia: moving to pos X - " << _path.back().X << ", pos Y - " << _path.back().Y << std::endl;
+		_parent->move_to(_path.back());
+		_path.pop_back();
+	}
+	_last = utils::get_milliseconds();
+}
+
+bool	mycomparison(const irr::core::position2di &first, const irr::core::position2di &second)
+{
+	return (true); 
+}
+
+void	ia::get_pos_by_dir(std::pair<irr::s32 *, irr::s32 *> *dirs,
+		irr::core::position2di &pos,
+		irr::core::position2di &target_pos,
+		bool dir)
+{
+	if (dir){
+		dirs[0] = std::pair<irr::s32 *, irr::s32 *>(&pos.X, &pos.Y);
+		dirs[1] = std::pair<irr::s32 *, irr::s32 *>(&target_pos.X, &target_pos.Y);
+	} else {
+		dirs[0] = std::pair<irr::s32 *, irr::s32 *>(&pos.Y, &pos.X);
+		dirs[1] = std::pair<irr::s32 *, irr::s32 *>(&target_pos.Y, &target_pos.X);
+	}
+}
+
+int	ia::get_direction(std::pair<irr::s32 *, irr::s32 *> *dirs, irr::core::position2di &pos)
+{
+	int	direction = direction = *dirs[1].first - *dirs[0].first;
+	TYPE_FLOOR	*current = nullptr;
+
+	if (direction == 0){
+		*dirs[0].first += 1;
+		current = _parent->get_parent()->get_floor(pos.X, pos.Y);
+		if (current && std::get<2>(*current) < GroundType::WALL)
+			direction = 1;
+		*dirs[0].first -= 2;
+		current = _parent->get_parent()->get_floor(pos.X, pos.Y);
+		if (direction == 0 && current && std::get<2>(*current) < GroundType::WALL)
+			direction = -1;
+		*dirs[0].first += 1;		
+	}
+	if (direction == 0)
+		return (0);
+	return (direction > 0 ? 1 : -1);
+}
+
+TYPE_FLOOR	*ia::search_best_pos(std::pair<irr::s32 *, irr::s32 *> *dirs, irr::core::position2di &pos, int direction, int other_direction)
+{
+	TYPE_FLOOR	*current = nullptr;
+	TYPE_FLOOR	*side = nullptr;
+	TYPE_FLOOR	*choosen = nullptr;
+	std::size_t	tmp;
+	std::size_t	distance = 0;
+
+	std::cout << "ia: axe " << (&pos.X == dirs[0].first ? "X" : "Y") << std::endl;
+	std::cout << "ia: direction - " << direction << std::endl;
+	*dirs[0].first += direction;
+	current = _parent->get_parent()->get_floor(pos.X, pos.Y);
+	for (;current;){
+		std::cout << "ia: checking pos X - " << pos.X << ", pos Y - " << pos.Y << std::endl;
+		tmp = abs(*dirs[0].first - *dirs[1].first) + abs(*dirs[0].second - *dirs[1].second);
+		if (tmp == 0 || std::get<2>(*current) >= GroundType::WALL)
+			break;
+		side = nullptr;
+		if (other_direction != 0){
+			*dirs[0].second += other_direction;
+			side = _parent->get_parent()->get_floor(pos.X, pos.Y);
+			*dirs[0].second -= other_direction;
+		}
+		if ((distance == 0 || tmp < distance) && tmp > 0 && (!side || std::get<2>(*side) < GroundType::WALL)){
+			distance = tmp;
+			choosen = current;
+		}
+		*dirs[0].first += direction;
+		current = _parent->get_parent()->get_floor(pos.X, pos.Y);
+	}
+	return (choosen);
+}
+
+std::list<irr::core::position2di>	ia::get_dirs_by_target(player *target, irr::core::position2di pos, bool dir)
+{
+	std::list<irr::core::position2di>	result;
+	TYPE_FLOOR				*choosen = nullptr;
+	irr::core::position2di			target_pos;
+	std::pair<irr::s32 *, irr::s32 *>	dirs[2];
+	int	direction = 0;
+	int	other_direction = 0;
+
+	if (!target)
+		return (result);
+	std::cout << "ia: find new path...\n";
+	target_pos = target->get_position();
+	std::cout << "ia: finding the axe...\n";
+	get_pos_by_dir(dirs, pos, target_pos, dir);
+	if (!dirs[0].first || !dirs[0].second || !dirs[1].first || !dirs[1].second)
+		return (result);
+	std::cout << "ia: finding the direction...\n";
+	direction = get_direction(dirs, pos);
+	if (*dirs[1].second != *dirs[0].second)
+		other_direction *= *dirs[1].second > *dirs[0].second ? 1 : -1;
+	std::cout << "ia: finding the best next pos...\n";
+	if (direction != 0)
+		choosen = search_best_pos(dirs, pos, direction, other_direction);
+	if (choosen){
+		std::cout << "ia: choosen pos X - " << std::get<0>(*choosen) << ", pos Y - " << std::get<1>(*choosen) << std::endl;
+		result.push_back(irr::core::position2di(std::get<0>(*choosen), std::get<1>(*choosen)));
+		if (abs(std::get<0>(*choosen) - target_pos.X) + abs(std::get<1>(*choosen) - target_pos.Y) > 1)
+			result.merge(get_dirs_by_target(target, result.back(), !dir), &mycomparison);
+	}
+	return (result);
+}
+
+bool	ia::check_if_target_new_pos(player *target)
+{
+	irr::core::position2di	pos = target->get_position();
+
+	std::cout << "ia: checking...\n";
+	if (pos != _old_pos_target)
+		return (true);
+	return (false);
 }
 
 player	*ia::get_target()
 {
 	std::list<std::unique_ptr<player>>::iterator	it = _parent->get_parent()->get_players().begin();
 
+	std::cout << "ia: getting new target...\n";
 	std::advance(it, std::rand() % _parent->get_parent()->get_players().size());
 	if (it != _parent->get_parent()->get_players().end() && it->get() != _parent)
 		return (it->get());
+	std::cout << "ia: no target found\n";
 	return (nullptr);
-}
-
-irr::core::position2di	ia::get_cell_near_target(player *target, std::list<irr::core::position2di> &dirs)
-{
-	irr::core::position2di	pos  = dirs.front();
-	irr::core::position2di	target_pos = target->get_position();
-	double			cell_x = abs(target_pos.X - pos.X);
-	double			cell_y = abs(target_pos.Y - pos.Y);
-	double			old = cell_x + cell_y;
-
-	for (auto &dir : dirs){
-		cell_x = abs(target_pos.X - dir.X);
-		cell_y = abs(target_pos.Y - dir.Y);
-		if (cell_x + cell_y < old){
-			pos = dir;
-			old = cell_x + cell_y;
-		}
-	}
-	return (pos);
-}
-
-std::list<irr::core::position2di>	&ia::get_all_dirs_h(irr::core::position2di &pos, std::list<irr::core::position2di> &dirs)
-{
-	TYPE_FLOOR	*floor = _parent->get_parent()->get_floor(pos.X, pos.Y);
-	TYPE_FLOOR	*left = floor;
-	TYPE_FLOOR	*right = floor;
-	irr::core::position2di	pos_l;
-	irr::core::position2di	pos_r;
-
-	for (int i = 0;floor && (left || right);i++){
-		pos_l = irr::core::position2di(pos.X + i, pos.Y);
-		pos_r = irr::core::position2di(pos.X - i, pos.Y);
-		add_to_dirs(pos_l, &left, dirs);
-		add_to_dirs(pos_r, &right, dirs);
-	}
-}
-
-std::list<irr::core::position2di>	&ia::get_all_dirs_v(irr::core::position2di &pos, std::list<irr::core::position2di> &dirs)
-{
-	TYPE_FLOOR	*floor = _parent->get_parent()->get_floor(pos.X, pos.Y);
-	TYPE_FLOOR	*left = floor;
-	TYPE_FLOOR	*right = floor;
-	irr::core::position2di	pos_l;
-	irr::core::position2di	pos_r;
-
-	for (int i = 0;floor && (left || right);i++){
-		pos_l = irr::core::position2di(pos.X, pos.Y + i);
-		pos_r = irr::core::position2di(pos.X, pos.Y - i);
-		add_to_dirs(pos_l, &left, dirs);
-		add_to_dirs(pos_r, &right, dirs);
-	}
-}
-
-void	ia::add_to_dirs(irr::core::position2di &pos, TYPE_FLOOR **floor, std::list<irr::core::position2di> &dirs)
-{
-	if (floor && *floor)
-		*floor = _parent->get_parent()->get_floor(pos.X, pos.Y);
-	if (floor && *floor && std::get<2>(**floor) < GroundType::WALL)
-		dirs.push_back(pos);
-	else
-		*floor = nullptr;
 }

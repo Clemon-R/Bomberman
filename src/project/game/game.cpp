@@ -542,13 +542,17 @@ void	game::save_game(const std::string &filename)
 
 std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *>	*game::get_floor(int x, int y)
 {
-	for (auto &elem : _floor){
-		for (auto &floor : elem){
-			if (std::get<0>(floor) == x && std::get<1>(floor) == y)
-				return (&floor);
-		}
-	}
-	return (nullptr);
+	std::list<std::list<TYPE_FLOOR>>::iterator	v = _floor.begin();
+	std::list<TYPE_FLOOR>::iterator	h;
+
+	std::advance(v, y);
+	if (v == _floor.end())
+		return (nullptr);
+	h = v->begin();
+	std::advance(h, x);
+	if (h == v->end())
+		return (nullptr);
+	return (&(*h));
 }
 
 std::list<std::list<TYPE_FLOOR>>	&game::get_floors()

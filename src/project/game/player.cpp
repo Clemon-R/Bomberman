@@ -124,6 +124,8 @@ void	player::move_to(const irr::core::position2di &pos)
 		delay = (player.Y - pos.Y) * 100;
 		_rotate = irr::core::vector3df(0, delay < 0 ? 0 : 180, 0);
 	}
+	if (_moving)
+		stop();
 	_target = utils::convert_position(pos, *_config);
 	anim = _smgr->createFlyStraightAnimator(_design->getPosition(), _target, delay < 0 ? delay * -1 : delay);
 	if (anim){
