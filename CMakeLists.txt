@@ -18,7 +18,6 @@ set(BOMBERMAN_GAME
 	src/project/game/game_handler.cpp
 	src/project/game/player.cpp
 	src/project/game/bomb.cpp
-	src/project/game/server.cpp
 	src/project/game/ia.cpp
 )
 

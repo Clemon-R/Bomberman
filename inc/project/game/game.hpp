@@ -17,7 +17,6 @@ class	project;
 class	game_handler;
 	#include "project/game/game_handler.hpp"
 	#include "project/game/bomb.hpp"
-	#include "project/game/server.hpp"
 	#include "project/enum_list.hpp"
 	#include <iostream>
 	#include <list>
@@ -32,7 +31,7 @@ public:
 	game(irr::IrrlichtDevice *graphic, config *config, project *project, bool draw = true);
 	~game();
 
-	player	*get_player();
+	player	*get_player(int number);
 
 	void	run() override final;
 	void	pause();
@@ -79,6 +78,8 @@ private:
 	void	load_map(const std::string &map);
 
 	player	*_current;
+	player	*_current2;
+	bool	_multiplayer;
 	bool	_break;
 	std::list<std::unique_ptr<player>>	_players;
 	std::list<bomb *>			_bombs;
@@ -93,6 +94,5 @@ private:
 	config				*_config;
 	project				*_project;
 	irr::gui::IGUIEditBox		*_text;
-	server				*_server;
 };
 #endif /* !GAME_HPP_ */

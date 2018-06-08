@@ -21,10 +21,10 @@ game::game(irr::IrrlichtDevice *graphic, config *config, project *project, bool 
 _break(false), _current(nullptr), _project(project), _handler(new game_handler(graphic, *this)), _camera(nullptr)
 {
 	std::cout << "game: init...\n";
-	_server = new server();
 	_driver = _graphic->getVideoDriver();
 	_env = _graphic->getGUIEnvironment();
     	_smgr = _graphic->getSceneManager();
+    	_multiplayer == true;
 	if (!_driver || !_env || !_smgr)
 		throw exception("Impossible to find the driver");
 	generate_floor();
@@ -119,7 +119,11 @@ void	game::create_players()
 		_players.push_back(std::make_unique<player>(i, this, _graphic, _config));
 		_players.back()->set_position(irr::core::position2di(i % 2 * (_config->TILE_COUNT - 3) + 1, i / 2 * (_config->TILE_COUNT - 3) + 1));
 		_players.back()->set_rotation(i / 2 * 180);
-		if (i < 3)
+		if (i < 2)
+			_players.back()->set_ia();
+		if (i == 2 && _multiplayer == true)
+			_current2 = _players.back().get();
+		else if (i == 2 && _multiplayer == false)
 			_players.back()->set_ia();
 	}
 	_current = _players.back().get();
@@ -370,7 +374,7 @@ void	game::draw_all()
 	draw_wall();
 	for (const auto &player : _players)
 		player->spawn();
-	if (_current->is_alive())
+	if (_current->is_alive() && _multiplayer == false)
 		_current->set_camera();
 	else
 		set_camera();
@@ -583,9 +587,14 @@ std::list<bomb *>	&game::get_bombs()
 	return (_bombs);
 }
 
-player	*game::get_player()
+player	*game::get_player(int number)
 {
-	return (_current);
+	if (number == 1)
+		return (_current);
+	if (number == 2 && _multiplayer)
+		return (_current2);
+	else if (number == 2 && !_multiplayer)
+		return (nullptr);
 }
 
 bool	game::is_break() const
