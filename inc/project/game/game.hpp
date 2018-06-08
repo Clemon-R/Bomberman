@@ -28,7 +28,7 @@ using	TYPE_FLOOR = std::tuple<int, int, GroundType, irr::video::ITexture *, irr:
 class	game : public interface
 {
 public:
-	game(irr::IrrlichtDevice *graphic, config *config, project *project, bool draw = true);
+	game(irr::IrrlichtDevice *graphic, config *config, project *project, bool multiplayer, bool draw = true);
 	~game();
 
 	player	*get_player(int number);

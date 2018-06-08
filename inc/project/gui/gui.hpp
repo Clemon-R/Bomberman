@@ -37,6 +37,8 @@ public:
 
 	const std::string	get_text();
 	project			&get_project();
+
+	void	set_multi(bool);
 private:
 	irr::IrrlichtDevice	*_graphic;
 	irrklang::ISound	*_sound;
@@ -46,5 +48,6 @@ private:
 	config			*_config;
 	project			*_project;
 	irr::gui::IGUIEditBox	*_text;
+	bool			_multiplayer;
 };
 #endif /* !GUI_HPP_ */

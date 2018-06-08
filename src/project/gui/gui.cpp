@@ -14,6 +14,7 @@ gui::gui(irr::IrrlichtDevice *graphic, config *config, project *project) : _grap
 _config(config), _driver(nullptr), _env(nullptr), _handler(std::make_unique<gui_handler>(graphic, *this)), _project(project)
 {
 	std::cout << "gui: init...\n";
+	_multiplayer = false;
 	_driver = _graphic->getVideoDriver();
 	_env = _graphic->getGUIEnvironment();
 	if (!_driver || !_env)
@@ -90,21 +91,29 @@ void	gui::load_menu()
 void	gui::multiplayer_menu()
 {
 	irr::video::ITexture	*img1 = database::load_img("btn_back", ".png");
+	irr::video::ITexture	*activate_multi = database::load_img("btn_is_multi", ".png");
+	irr::video::ITexture	*deactivate_multi = database::load_img("btn_is_not_multi", ".png");
+
 	std::size_t	x = 0;
+	std::size_t	y = 0;
+	std::size_t	z = 0;
 
 	if (!img1)
 		throw exception("Impossible to load image");
 	std::cout << "gui: multiplayer menu\n";
 	x = (_config->WINDOW_WIDTH - img1->getSize().Width) / 2;
+	y = _config->WINDOW_HEIGHT / 2;
 	_env->clear();
-	utils::add_button(_env, img1, irr::core::position2di(x, _config->WINDOW_HEIGHT / 2), CodeEventGui::BACK);
+	utils::add_button(_env, activate_multi, irr::core::position2di(x, _config->WINDOW_HEIGHT - _config->WINDOW_HEIGHT / 1.5), CodeEventGui::ACTIVATE_MULTI);
+	utils::add_button(_env, deactivate_multi, irr::core::position2di(x, _config->WINDOW_HEIGHT - _config->WINDOW_HEIGHT / 2), CodeEventGui::DEACTIVATE_MULTI);
+	utils::add_button(_env, img1, irr::core::position2di(x, _config->WINDOW_HEIGHT - _config->WINDOW_HEIGHT / 3), CodeEventGui::BACK);
 }
 
 void	gui::play_game()
 {
 	std::cout << "gui: starting game...\n";
 	_graphic->setEventReceiver(nullptr);
-	_project->set_interface(new game(_graphic, _config, _project));
+	_project->set_interface(new game(_graphic, _config, _project, _multiplayer));
 }
 
 void	gui::load_game(const std::string &filename)
@@ -133,4 +142,13 @@ const std::string	gui::get_text()
 project	&gui::get_project()
 {
 	return (*_project);
+}
+
+void	gui::set_multi(bool is_mutli)
+{
+	if (is_mutli)
+		std::cout << "gui: multiplayer enable" << std::endl;
+	else
+		std::cout << "gui: multiplayer disable" << std::endl;
+	_multiplayer = is_mutli;
 }

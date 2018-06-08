@@ -17,14 +17,13 @@
 #include <algorithm>
 #include <regex>
 
-game::game(irr::IrrlichtDevice *graphic, config *config, project *project, bool draw) : _graphic(graphic), _config(config),
-_break(false), _current(nullptr), _project(project), _handler(new game_handler(graphic, *this)), _camera(nullptr)
+game::game(irr::IrrlichtDevice *graphic, config *config, project *project, bool multiplayer, bool draw) : _graphic(graphic), _config(config),
+_break(false), _current(nullptr), _project(project), _handler(new game_handler(graphic, *this)), _camera(nullptr), _multiplayer(multiplayer)
 {
 	std::cout << "game: init...\n";
 	_driver = _graphic->getVideoDriver();
 	_env = _graphic->getGUIEnvironment();
     	_smgr = _graphic->getSceneManager();
-    	_multiplayer == true;
 	if (!_driver || !_env || !_smgr)
 		throw exception("Impossible to find the driver");
 	generate_floor();
@@ -374,7 +373,7 @@ void	game::draw_all()
 	draw_wall();
 	for (const auto &player : _players)
 		player->spawn();
-	if (_current->is_alive() && _multiplayer == false)
+	if (_multiplayer == false && _current->is_alive())
 		_current->set_camera();
 	else
 		set_camera();
