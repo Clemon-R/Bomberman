@@ -52,17 +52,8 @@ bool	gui_handler::window_handler(const irr::SEvent& event)
 			break;
 
 		case CodeEventGui::MULTIPLAYER:
-			_gui.multiplayer_menu();
+			_gui.play_multiplayer_game();
 			break;
-
-		case CodeEventGui::ACTIVATE_MULTI:
-			_gui.set_multi(true);
-			break;
-
-		case CodeEventGui::DEACTIVATE_MULTI:
-			_gui.set_multi(false);
-			break;
-
 		default:
 		return (false);
 	}

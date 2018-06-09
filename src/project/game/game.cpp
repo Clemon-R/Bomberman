@@ -116,11 +116,11 @@ void	game::back_to_main()
 void	game::create_players()
 {
 	std::cout << "game: creating all players...\n";
-	for (int i = 0;i < 3;i += 1){
+	for (int i = 0;i < 4;i += 1){
 		_players.push_back(std::make_unique<player>(i, this, _graphic, _config));
 		_players.back()->set_position(irr::core::position2di(i % 2 * (_config->TILE_COUNT - 3) + 1, i / 2 * (_config->TILE_COUNT - 3) + 1));
 		_players.back()->set_rotation(i / 2 * 180);
-		if (i < (_multiplayer ? 1 : 2))
+		if (i < (_multiplayer ? 2 : 3))
 			_players.back()->set_ia();
 		if (i == 2 && _multiplayer == true)
 			_current2 = _players.back().get();
@@ -294,13 +294,13 @@ void     game::generate_map()
 			if (std::get<0>(*x) == 0 || std::get<1>(*x) == 0 || std::get<0>(*x) == _config->TILE_COUNT - 1 || std::get<1>(*x) == _config->TILE_COUNT - 1)
 				continue;
 			if (std::get<0>(*x) % 2 == 0 || std::get<1>(*x) % 2 == 0){
+				if (std::rand() % 2)
+					continue;
 				std::get<2>(*x) = GroundType::BRICK;
 				std::get<3>(*x) = brick;
-				continue;
 			} else {
 				std::get<2>(*x) = GroundType::WALL;
 				std::get<3>(*x) = wall;
-				continue;
 			}
 
 		}

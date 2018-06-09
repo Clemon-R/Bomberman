@@ -24,9 +24,7 @@ enum	CodeEventGui
 	LOAD,
 	CHARGE,
 	BACK,
-	MULTIPLAYER,
-	ACTIVATE_MULTI,
-	DEACTIVATE_MULTI
+	MULTIPLAYER
 };
 
 enum	CodeEventGame

@@ -71,10 +71,12 @@ std::list<irr::core::position2di>	ia::get_dirs_fear(irr::core::position2di &fear
 	std::size_t	nbr = std::rand() % 10 + 2;
 	std::size_t	distance = 0;
 	std::size_t	tempo;
+	std::size_t	trying = 0;
 
+	std::cout << "ia: get the fear dirs...\n";
 	if (!current || _lock)
 		return (result);
-	for (int i = 0;i < nbr;i++){
+	for (int i = 0;i < nbr && trying < 10;i++){
 		for (int r = std::rand() % 4, t = 0;t < 4;t += 1, r = std::rand()){
 			pos.X += r % 2 - 2 * (r == 3);
 			pos.Y += (r + 1) % 2 - 2 * (r == 2);
@@ -94,6 +96,7 @@ std::list<irr::core::position2di>	ia::get_dirs_fear(irr::core::position2di &fear
 		if (i == nbr - 1 && distance < 2){
 			i = 0;
 			distance = 0;
+			trying++;
 		}
 	}
 	std::cout << "ia: distance - " << distance << std::endl;
@@ -107,6 +110,7 @@ bool	ia::check_if_near_bomb()
 	irr::core::position2di	bomb_pos;
 	irr::core::position2di	pos;
 
+	std::cout << "ia: check if near of one bomb...\n";
 	if (_fear && std::find(bombs.begin(), bombs.end(), _fear) != bombs.end())
 		return (true);
 	pos = _parent->get_position();
@@ -127,6 +131,7 @@ bool	ia::check_if_near_target(player *target)
 	irr::core::position2di	pos;
 	irr::core::position2di	target_pos;
 
+	std::cout << "ia: chcek if near of the target...\n";
 	if (!target)
 		return (false);
 	pos = _parent->get_position();
@@ -188,7 +193,7 @@ TYPE_FLOOR	*ia::search_best_pos(std::pair<irr::s32 *, irr::s32 *> *dirs, irr::co
 	std::cout << "ia: direction - " << direction << std::endl;
 	*dirs[0].first += direction;
 	current = _parent->get_parent()->get_floor(pos.X, pos.Y);
-	for (;current;){
+	while (current){
 		std::cout << "ia: checking pos X - " << pos.X << ", pos Y - " << pos.Y << std::endl;
 		tmp = abs(*dirs[0].first - *dirs[1].first) + abs(*dirs[0].second - *dirs[1].second);
 		if (tmp == 0 || (std::get<2>(*current) >= GroundType::WALL && std::get<2>(*current) != GroundType::BRICK))
