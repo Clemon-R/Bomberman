@@ -65,9 +65,10 @@ void	game::break_menu()
 	y = _config->WINDOW_HEIGHT / 2;
 	_env->clear();
 	_env->addImage(bg, irr::core::position2d<irr::s32>(0, 0));
-	if (!_end)
+	if (!_end){
 		utils::add_button(_env, img1, irr::core::position2di(x, y - img1->getSize().Height), CodeEventGame::CONTINU);
-	utils::add_button(_env, img2, irr::core::position2di(x, y + img2->getSize().Height / 2), CodeEventGame::SAVE);
+		utils::add_button(_env, img2, irr::core::position2di(x, y + img2->getSize().Height / 2), CodeEventGame::SAVE);
+	}
 	utils::add_button(_env, img, irr::core::position2di(x, y + img->getSize().Height * 2), CodeEventGame::LEAVE);
 }
 
@@ -485,7 +486,8 @@ void	game::dispatch_load(const std::string &param, const std::string &arg)
 				break;
 			}
 		}
-	}
+	} else if (param.compare("MULTI") == 0 && arg.compare("1") == 0)
+		_multiplayer = true;
 }
 
 void	game::load_game(const std::string &filename)
@@ -543,7 +545,8 @@ void	game::save_game(const std::string &filename)
 	for (auto &p : _players)
 		p->save_player(file);
 	if (_current)
-		file << "CURRENT=" << _current->get_id();
+		file << "CURRENT=" << _current->get_id() << std::endl;
+	file << "MULTI=" << (_multiplayer ? "1" : "0") << "\n";
 	file.close();
 	std::cout << "game: saved\n";
 }

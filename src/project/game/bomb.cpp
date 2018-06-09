@@ -50,8 +50,10 @@ void	bomb::spawn()
 		throw exception("Impossible to load tnt");
 	std::get<3>(*ground) = tnt;
 	std::get<2>(*ground) = GroundType::TNT;
-	if (std::get<4>(*ground))
+	if (std::get<4>(*ground)){
 		std::get<4>(*ground)->remove();
+		std::get<4>(*ground) = nullptr;
+	}
 	_design = _parent->get_parent()->add_wall(*ground);
 }
 
