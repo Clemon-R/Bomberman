@@ -26,6 +26,8 @@ public:
 
 	void	spawn();
 	bool	run();
+
+	irr::core::position2di	get_position();
 private:
 	void	explode();
 	void	change_to_fire(std::tuple<int, int, GroundType, irr::video::ITexture *, irr::scene::IMeshSceneNode *> *floor);

@@ -25,6 +25,8 @@ ia::~ia()
 
 void	ia::run()
 {
+	irr::core::position2di	pos = _parent->get_position();
+
 	if (utils::get_milliseconds() - _last < 500)
 		return;
 	if (!_target || !_target->is_alive()){
@@ -35,9 +37,9 @@ void	ia::run()
 	if (!_target)
 		return;
 	if (_path.size() == 0 || check_if_target_new_pos(_target)){
-		_path = get_dirs_by_target(_target, _parent->get_position(), true);
+		_path = get_dirs_by_target(_target, pos, true);
 		if (_path.size() == 0)
-			_path = get_dirs_by_target(_target, _parent->get_position(), false);
+			_path = get_dirs_by_target(_target, pos, false);
 		_old_pos_target = _target->get_position();
 	}
 	if (!_parent->is_moving() && _path.size() > 0){
@@ -45,7 +47,62 @@ void	ia::run()
 		_parent->move_to(_path.back());
 		_path.pop_back();
 	}
+	if (_target && check_if_near_target(_target))
+		_parent->drop_bomb();
+	if (_path.size() == 0 && check_if_near_bomb())
+		_path = get_dirs_fear(pos);
 	_last = utils::get_milliseconds();
+}
+
+std::list<irr::core::position2di>	ia::get_dirs_fear(irr::core::position2di &fear)
+{
+	std::list<irr::core::position2di>	result;
+	irr::core::position2di	pos = fear;
+	irr::s32	*axe = nullptr;
+	TYPE_FLOOR	*tmp = nullptr;
+	TYPE_FLOOR	*current = _parent->get_parent()->get_floor(fear.X, fear.Y);
+
+	if (!current)
+		return (result);
+	axe = std::rand() % 2 ? &pos.X : &pos.Y;
+	*axe += std::rand() % 2 ? 1 : -1;
+	for (int i = 0;i < 6;i++){
+		tmp = _parent->get_parent()->get_floor(pos.X, pos.Y);
+		if (tmp && std::get<2>(*tmp) < GroundType::WALL)
+			result.push_back(pos);
+		axe = std::rand() % 2 ? &pos.X : &pos.Y;
+		*axe += std::rand() % 2 ? 1 : -1;
+	}
+	return (result);
+}
+
+bool	ia::check_if_near_bomb()
+{
+	std::list<bomb *>	bombs = _parent->get_parent()->get_bombs();
+	irr::core::position2di	bomb_pos;
+	irr::core::position2di	pos;
+
+	pos = _parent->get_position();
+	for (auto &bomb : bombs){
+		bomb_pos = bomb->get_position();
+		if (abs(bomb_pos.X - pos.X) + abs(bomb_pos.Y - pos.Y) <= 1)
+			return (true);
+	}
+	return (false);
+}
+
+bool	ia::check_if_near_target(player *target)
+{
+	irr::core::position2di	pos;
+	irr::core::position2di	target_pos;
+
+	if (!target)
+		return (false);
+	pos = _parent->get_position();
+	target_pos = target->get_position();
+	if (abs(pos.X - target_pos.X) + abs(pos.Y - target_pos.Y) <= 1)
+		return (true);
+	return (false);
 }
 
 bool	mycomparison(const irr::core::position2di &first, const irr::core::position2di &second)

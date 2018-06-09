@@ -155,3 +155,8 @@ float	bomb::get_volume()
 	std::cout << "bomb: sound - " << distance << std::endl;
 	return (distance);
 }
+
+irr::core::position2di	bomb::get_position()
+{
+	return (utils::convert_vector(_design->getPosition(), *_config));
+}
