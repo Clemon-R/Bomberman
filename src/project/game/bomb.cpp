@@ -99,7 +99,7 @@ void	bomb::change_to_fire(std::tuple<int, int, GroundType, irr::video::ITexture 
 {
 	irr::video::ITexture	*fire = database::load_img("fire", ".png");
 
-	if (!floor || std::get<2>(*floor) == GroundType::WALL)
+	if (!floor)
 		return;
 	if (!fire)
 		throw exception("Impossible to load fire");
@@ -129,7 +129,8 @@ void	bomb::explode()
 		pos.X += i % 2 - 2 * (i == 3);
 		pos.Y += (i + 1) % 2 - 2 * (i == 2);
 		ground = _parent->get_parent()->get_floor(pos.X, pos.Y);
-		change_to_fire(ground);
+		if (ground && (std::get<2>(*ground) == GroundType::BRICK || std::get<2>(*ground) == GroundType::NONE))
+			change_to_fire(ground);
 		pos.X -= i % 2 - 2 * (i == 3);
 		pos.Y -= (i + 1) % 2 - 2 * (i == 2);
 	}

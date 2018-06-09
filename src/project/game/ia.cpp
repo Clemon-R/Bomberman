@@ -39,7 +39,7 @@ void	ia::run()
 	if (!_target)
 		return;
 	if ((!_fear || _path.size() == 0) && check_if_near_bomb())
-		_path = get_dirs_fear(pos);
+		_path = get_dirs_fear(_fear->get_position());
 	else if (!_fear && (_path.size() == 0 || check_if_target_new_pos(_target))){
 		_path = get_dirs_by_target(_target, pos, true);
 		if (_path.size() == 0)
@@ -61,7 +61,7 @@ void	ia::run()
 	_last = utils::get_milliseconds();
 }
 
-std::list<irr::core::position2di>	ia::get_dirs_fear(irr::core::position2di &fear)
+std::list<irr::core::position2di>	ia::get_dirs_fear(irr::core::position2di fear)
 {
 	std::list<irr::core::position2di>	result;
 	std::list<irr::core::position2di>	old;
