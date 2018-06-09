@@ -265,6 +265,11 @@ void	player::set_ia()
 	_ia.reset(new ia(this));
 }
 
+void	player::remove_ia()
+{
+	_ia.reset(nullptr);
+}
+
 ia	*player::get_ia()
 {
 	return (_ia.get());

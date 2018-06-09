@@ -47,6 +47,7 @@ public:
 	bool	is_alive() const;
 	ia	*get_ia();
 	void	set_ia();
+	void	remove_ia();
 	bool	is_moving() const;
 	irr::core::position2di	get_position() const;
 	void	set_position(const irr::core::position2di &pos);

@@ -123,7 +123,7 @@ void	game::create_players()
 		_players.back()->set_rotation(i / 2 * 180);
 		if (i < (_multiplayer ? 2 : 3))
 			_players.back()->set_ia();
-		if (i == 2 && _multiplayer == true)
+		if (i == 2)
 			_current2 = _players.back().get();
 	}
 	_current = _players.back().get();
@@ -472,7 +472,7 @@ void	game::dispatch_load(const std::string &param, const std::string &arg)
 	std::regex	e("P([0-9])+_(.+)");
 	std::smatch	matchs;
 
-	std::cout << "game: dispatch param - " << param << std::endl;
+	std::cout << "game: dispatch param - " << param << ", val - " << arg << std::endl;
 	if (std::regex_search(param, matchs, e)){
 		for (auto &p : _players)
 			if (p->get_id() == std::atoi(matchs[1].str().c_str()))
@@ -486,8 +486,11 @@ void	game::dispatch_load(const std::string &param, const std::string &arg)
 				break;
 			}
 		}
-	} else if (param.compare("MULTI") == 0 && arg.compare("1") == 0)
+	} else if (param.compare("MULTI") == 0 && arg.compare("1") == 0){
 		_multiplayer = true;
+		if (_current2)
+			_current2->remove_ia();
+	}
 }
 
 void	game::load_game(const std::string &filename)

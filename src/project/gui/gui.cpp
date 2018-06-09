@@ -107,7 +107,7 @@ void	gui::load_game(const std::string &filename)
 
 	std::cout << "gui: loading a game...\n";
 	_graphic->setEventReceiver(nullptr);
-	current = new game(_graphic, _config, _project, false);
+	current = new game(_graphic, _config, _project, false, false);
 	if (!current)
 		return;
 	current->load_game(filename);
