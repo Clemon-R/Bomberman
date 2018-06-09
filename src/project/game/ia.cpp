@@ -50,7 +50,7 @@ void	ia::run()
 		tmp = _parent->get_parent()->get_floor(_path.back().X, _path.back().Y);
 		if (tmp && std::get<2>(*tmp) == GroundType::BRICK)
 			_parent->drop_bomb();
-		else {
+		else if (tmp && std::get<2>(*tmp) != GroundType::FIRE) {
 			std::cout << "ia: moving to pos X - " << _path.back().X << ", pos Y - " << _path.back().Y << std::endl;
 			_parent->move_to(_path.back());
 			_path.pop_back();
@@ -77,12 +77,12 @@ std::list<irr::core::position2di>	ia::get_dirs_fear(irr::core::position2di fear)
 	if (!current || _lock)
 		return (result);
 	for (int i = 0;i < nbr && trying < 10;i++){
-		for (int r = std::rand() % 4, t = 0;t < 4;t += 1, r = std::rand()){
+		for (int r = std::rand() % 4, t = 0;t < 4;t += 1, r = std::rand() % 4){
 			pos.X += r % 2 - 2 * (r == 3);
 			pos.Y += (r + 1) % 2 - 2 * (r == 2);
 			tmp = _parent->get_parent()->get_floor(pos.X, pos.Y);
 			tempo = abs(pos.X - fear.X) + abs(pos.Y - fear.Y);
-			if (std::find(old.begin(), old.end(), pos) == old.end() && tmp && std::get<2>(*tmp) < GroundType::WALL && tempo > distance){
+			if (std::find(old.begin(), old.end(), pos) == old.end() && tmp && std::get<2>(*tmp) < GroundType::FIRE && tempo > distance){
 				result.push_front(pos);
 				distance = tempo;
 				break;
@@ -96,6 +96,7 @@ std::list<irr::core::position2di>	ia::get_dirs_fear(irr::core::position2di fear)
 		if (i == nbr - 1 && distance < 2){
 			i = 0;
 			distance = 0;
+			old.clear();
 			trying++;
 		}
 	}
@@ -204,7 +205,7 @@ TYPE_FLOOR	*ia::search_best_pos(std::pair<irr::s32 *, irr::s32 *> *dirs, irr::co
 			side = _parent->get_parent()->get_floor(pos.X, pos.Y);
 			*dirs[0].second -= other_direction;
 		}
-		if ((distance == 0 || tmp < distance) && tmp > 0 && (!side || std::get<2>(*side) < GroundType::WALL || std::get<2>(*side) == GroundType::BRICK)){
+		if ((distance == 0 || tmp < distance) && tmp > 0 && (!side || std::get<2>(*side) < GroundType::FIRE || std::get<2>(*side) == GroundType::BRICK)){
 			if (choosen && std::get<2>(*current) == GroundType::BRICK)
 				break;
 			distance = tmp;

@@ -137,7 +137,8 @@ void	player::move_to(const irr::core::position2di &pos)
 		_design->setRotation(_rotate);
 		_moving = true;
 		_sound = _parent->get_project().get_sound()->play2D("ressources/sounds/run.mp3", true, false, true);
-		_sound->setVolume(get_volume());
+		if (_sound)
+			_sound->setVolume(get_volume());
 		std::cout << "player: start running...\n";
 	}
 }
