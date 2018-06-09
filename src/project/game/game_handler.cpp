@@ -66,13 +66,18 @@ bool	game_handler::window_handler(const irr::SEvent& event)
 
 bool	game_handler::key_handler(const irr::SEvent& event)
 {
-	player	*target = _game.get_current();
+	player	*target = _game.get_current(1);
+	player	*target2 = _game.get_current(2);
 
-	if (!target)
+	if (!target && !target2)
 		return (true);
 	if (!event.KeyInput.PressedDown){
-		if (_last.back() == event.KeyInput.Key)
-			target->stop();
+		if (_last.back() == event.KeyInput.Key){
+			if (target)
+				target->stop();
+			if (target2)
+				target2->stop();
+		}
 		_last.remove(event.KeyInput.Key);
 		if (_last.size() > 0)
 			move_handler(_last.back());
@@ -87,37 +92,56 @@ bool	game_handler::key_handler(const irr::SEvent& event)
 
 bool	game_handler::move_handler(int key)
 {
-	player	*target = _game.get_current();
-	irr::scene::ISceneNode *test;
-	auto	x = target->get_parent()->get_floor(target->get_position().X, target->get_position().Y);
-	auto	tmp = x;
+	TYPE_FLOOR	*current = nullptr;
+	TYPE_FLOOR	*tmp = nullptr;
+	player	*target1 = _game.get_current(1);
+	player	*target2 = _game.get_current(2);
+	player	*target = nullptr;
 
-	std::cout << "game_handler: new key event\n";
 	switch (key){
-		case irr::KEY_DOWN:
-		case irr::KEY_UP:
-		do {
-			tmp = x;
-			x = target->get_parent()->get_floor(target->get_position().X, std::get<1>(*x) + (key == irr::KEY_UP ? 1 : -1));
-		} while (std::get<2>(*x) <= GroundType::FIRE);
-		target->move_to(irr::core::position2di(target->get_position().X, std::get<1>(*tmp)));
-		break;
+		case irr::KEY_KEY_O:
+		case irr::KEY_KEY_L:
+		case irr::KEY_KEY_S:
+		case irr::KEY_KEY_Z:
+			target = key == irr::KEY_KEY_S || key == irr::KEY_KEY_Z ? target1 : target2;
+			if (!target)
+				break;
+			current = target->get_parent()->get_floor(target->get_position().X, target->get_position().Y);
+			do {
+				tmp = current;
+				current = target->get_parent()->get_floor(std::get<0>(*tmp), std::get<1>(*tmp) + (key == irr::KEY_KEY_Z || key == irr::KEY_KEY_O ? 1 : -1));
+			} while (std::get<2>(*current) <= GroundType::FIRE);
+			target->move_to(irr::core::position2di(std::get<0>(*tmp), std::get<1>(*tmp)));
+			break;
+	
+		case irr::KEY_KEY_K:
+		case irr::KEY_KEY_M:
+		case irr::KEY_KEY_Q:
+		case irr::KEY_KEY_D:
+			target = key == irr::KEY_KEY_Q || key == irr::KEY_KEY_D ? target1 : target2;
+			if (!target)
+				break;
+			current = target->get_parent()->get_floor(target->get_position().X, target->get_position().Y);
+			do {
+				tmp = current;
+				current = target->get_parent()->get_floor(std::get<0>(*tmp) + (key == irr::KEY_KEY_Q || key == irr::KEY_KEY_K ? 1 : -1), std::get<1>(*tmp));
+			} while (std::get<2>(*current) <= GroundType::FIRE);
+			target->move_to(irr::core::position2di(std::get<0>(*tmp), std::get<1>(*tmp)));
+			break;
 
-		case irr::KEY_LEFT:
-		case irr::KEY_RIGHT:
-		do {
-			tmp = x;
-			x = target->get_parent()->get_floor(std::get<0>(*x) + (key == irr::KEY_LEFT ? 1 : -1), std::get<1>(*x));
-		} while (std::get<2>(*x) <= GroundType::FIRE);
-		target->move_to(irr::core::position2di(std::get<0>(*tmp), target->get_position().Y));
-		break;
-		
-		case irr::KEY_SPACE:
-		target->drop_bomb();
-		break;
+		case irr::KEY_KEY_E:
+			if (target1)
+				target1->drop_bomb();
+			break;
+
+		case irr::KEY_KEY_P:
+			if (target2)
+				target2->drop_bomb();
+			break;
 
 		default:
-		return (false);
+			return (false);
 	}
+	std::cout << "game_handler: new key event\n";
 	return (true);
 }

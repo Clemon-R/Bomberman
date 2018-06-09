@@ -20,7 +20,7 @@ _design(nullptr), _parent(parent), _start(utils::get_milliseconds()), _exploded(
 		throw exception("Bomb need parent");
 	_driver = _graphic->getVideoDriver();
 	_env = _graphic->getGUIEnvironment();
-    	_smgr = _graphic->getSceneManager();
+	_smgr = _graphic->getSceneManager();
 	if (!_driver || !_env || !_smgr)
 		throw exception("Impossible to find the driver");
 	spawn();
@@ -139,7 +139,7 @@ void	bomb::explode()
 
 float	bomb::get_volume()
 {
-	player	*current = _parent->get_parent()->get_current();
+	player	*current = _parent->get_parent()->get_current(1);
 	irr::core::position2di	pos = current->get_position();
 	irr::core::position2di	own = utils::convert_vector(_design->getPosition(), *_config);
 	float		distance = 1.0f;
@@ -147,7 +147,7 @@ float	bomb::get_volume()
 	double		cell_y = abs(pos.Y - own.Y);
 	double		max = (_config->TILE_COUNT - 2) / 2;
 
-	if (cell_x == 0 && cell_y == 0)
+	if ((cell_x == 0 && cell_y == 0) || _parent->get_parent()->is_multiplayer())
 		return (1);
 	else if (cell_x > max || cell_y > max)
 		return (0);

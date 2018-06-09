@@ -27,9 +27,9 @@ void	ia::run()
 {
 	if (utils::get_milliseconds() - _last < 500)
 		return;
-	if (!_target){
+	if (!_target || !_target->is_alive()){
 		_target = get_target();
-		if (_target)
+		if (_target && _target->is_alive())
 			_old_pos_target = _target->get_position();
 	}
 	if (!_target)
@@ -170,7 +170,7 @@ player	*ia::get_target()
 
 	std::cout << "ia: getting new target...\n";
 	std::advance(it, std::rand() % _parent->get_parent()->get_players().size());
-	if (it != _parent->get_parent()->get_players().end() && it->get() != _parent)
+	if (it != _parent->get_parent()->get_players().end() && it->get() != _parent && (*it)->is_alive())
 		return (it->get());
 	std::cout << "ia: no target found\n";
 	return (nullptr);

@@ -55,6 +55,14 @@ bool	gui_handler::window_handler(const irr::SEvent& event)
 			_gui.multiplayer_menu();
 			break;
 
+		case CodeEventGui::ACTIVATE_MULTI:
+			_gui.set_multi(true);
+			break;
+
+		case CodeEventGui::DEACTIVATE_MULTI:
+			_gui.set_multi(false);
+			break;
+
 		default:
 		return (false);
 	}

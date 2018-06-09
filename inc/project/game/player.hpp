@@ -8,6 +8,7 @@
 #ifndef PLAYER_HPP_
 	#define PLAYER_HPP_
 
+	#include "project/game/bomb.hpp"
 	#include "irrlicht/irrlicht.h"
 	#include "irrklang/irrKlang.h"
 	#include "project/config.hpp"
@@ -69,6 +70,7 @@ private:
 	irr::core::vector3df			_last;
 
 	config					*_config;
+	game					*_parent;
 	irr::IrrlichtDevice			*_graphic;
 	irrklang::ISound			*_sound;
 	irr::video::IVideoDriver		*_driver;
@@ -78,7 +80,5 @@ private:
 	irr::core::vector3df			_rotate;
 	irr::scene::EMD2_ANIMATION_TYPE		_anim;
 	irr::scene::ICameraSceneNode		*_camera;
-
-	game					*_parent;
 };
 #endif /* !PLAYER_HPP_ */

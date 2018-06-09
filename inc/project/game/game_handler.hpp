@@ -24,6 +24,7 @@ private:
 	bool	key_handler(const irr::SEvent& event);
 
 	bool	move_handler(int key);
+	bool	move_handler_switch_case(int key, player *target);
 
 	irr::IrrlichtDevice	*_graphic;
 	std::list<int>		_last;

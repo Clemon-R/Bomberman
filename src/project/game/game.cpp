@@ -17,8 +17,9 @@
 #include <algorithm>
 #include <regex>
 
-game::game(irr::IrrlichtDevice *graphic, config *config, project *project, bool draw) : _graphic(graphic), _config(config),
-_break(false), _current(nullptr), _project(project), _handler(new game_handler(graphic, *this)), _camera(nullptr)
+game::game(irr::IrrlichtDevice *graphic, config *config, project *project, bool multiplayer, bool draw) : _graphic(graphic), _config(config),
+_break(false), _current(nullptr), _project(project), _handler(new game_handler(graphic, *this)), _camera(nullptr), _multiplayer(multiplayer),
+_end(false)
 {
 	std::cout << "game: init...\n";
 	_driver = _graphic->getVideoDriver();
@@ -64,7 +65,8 @@ void	game::break_menu()
 	y = _config->WINDOW_HEIGHT / 2;
 	_env->clear();
 	_env->addImage(bg, irr::core::position2d<irr::s32>(0, 0));
-	utils::add_button(_env, img1, irr::core::position2di(x, y - img1->getSize().Height), CodeEventGame::CONTINU);
+	if (!_end)
+		utils::add_button(_env, img1, irr::core::position2di(x, y - img1->getSize().Height), CodeEventGame::CONTINU);
 	utils::add_button(_env, img2, irr::core::position2di(x, y + img2->getSize().Height / 2), CodeEventGame::SAVE);
 	utils::add_button(_env, img, irr::core::position2di(x, y + img->getSize().Height * 2), CodeEventGame::LEAVE);
 }
@@ -118,8 +120,10 @@ void	game::create_players()
 		_players.push_back(std::make_unique<player>(i, this, _graphic, _config));
 		_players.back()->set_position(irr::core::position2di(i % 2 * (_config->TILE_COUNT - 3) + 1, i / 2 * (_config->TILE_COUNT - 3) + 1));
 		_players.back()->set_rotation(i / 2 * 180);
-		if (i < 3)
+		if (i < (_multiplayer ? 2 : 3))
 			_players.back()->set_ia();
+		if (i == 2 && _multiplayer == true)
+			_current2 = _players.back().get();
 	}
 	_current = _players.back().get();
 	std::cout << "game: players created\n";
@@ -166,6 +170,7 @@ irr::scene::IMeshSceneNode	*game::add_wall(std::tuple<int, int, GroundType, irr:
 void	game::run()
 {
 	auto	bomb = _bombs.begin();
+	std::size_t	nbr = 0;
 
 	_smgr->drawAll();
 	_env->drawAll();
@@ -175,11 +180,18 @@ void	game::run()
 		if (!(*bomb)->run())
 			bomb = _bombs.erase(bomb);
 	}
-	for (auto &player : _players)
-		if (player->is_alive())
-			player->refresh();
+	for (auto &player : _players){
+		if (!player->is_alive())
+			continue;
+		nbr++;
+		player->refresh();
+	}
 	if (_current && !_current->is_alive() && !_camera)
 		set_camera();
+	if (nbr <= 1){
+		_end = true;
+		pause();
+	}
 }
 
 /**
@@ -369,7 +381,7 @@ void	game::draw_all()
 	draw_wall();
 	for (const auto &player : _players)
 		player->spawn();
-	if (_current->is_alive())
+	if (_multiplayer == false && _current->is_alive())
 		_current->set_camera();
 	else
 		set_camera();
@@ -611,7 +623,14 @@ project	&game::get_project()
 	return (*_project);
 }
 
-player	*game::get_current()
+player	*game::get_current(std::size_t index)
 {
+	if (index == 2)
+		return (_multiplayer ? _current2 : nullptr);
 	return (_current);
+}
+
+bool	game::is_multiplayer() const
+{
+	return (_multiplayer);
 }

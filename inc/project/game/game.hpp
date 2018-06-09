@@ -26,7 +26,7 @@ class	game_handler;
 class	game : public interface
 {
 public:
-	game(irr::IrrlichtDevice *graphic, config *config, project *project, bool draw = true);
+	game(irr::IrrlichtDevice *graphic, config *config, project *project, bool multiplayer, bool draw = true);
 	~game();
 
 	void	run() override final;
@@ -51,12 +51,13 @@ public:
 	std::list<player *>	get_player_by_pos(int x, int y);
 	std::list<std::unique_ptr<player>>	&get_players();
 	bool	is_break() const;
+	bool	is_multiplayer() const;
 	void	set_camera();
 
 	void	draw_all();
 	irr::scene::IMeshSceneNode	*add_wall(TYPE_FLOOR &floor);
 	project	&get_project();
-	player	*get_current();
+	player	*get_current(std::size_t index);
 private:
 	void	create_players();
 
@@ -75,7 +76,10 @@ private:
 	void	load_map(const std::string &map);
 
 	player	*_current;
+	player	*_current2;
+	bool	_multiplayer;
 	bool	_break;
+	bool	_end;
 	std::list<std::unique_ptr<player>>	_players;
 	std::list<bomb *>			_bombs;
 	std::list<std::list<TYPE_FLOOR>>	_floor;

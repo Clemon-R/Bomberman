@@ -5,3 +5,5 @@
 *bomberman*
 *install_manifest.txt
 *bin
+*.sublime-project
+*.sublime-workspace

@@ -6,6 +6,7 @@
 */
 
 #include "project/game/player.hpp"
+#include "project/game/bomb.hpp"
 #include "exception.hpp"
 #include "project/database.hpp"
 #include "project/utils.hpp"
@@ -20,7 +21,7 @@ _camera(nullptr), _ia(nullptr), _moving(false), _sound(nullptr)
 
 	std::cout << "player: init...\n";
 	_driver = _graphic->getVideoDriver();
-    	_smgr = _graphic->getSceneManager();
+	_smgr = _graphic->getSceneManager();
 	if (!_driver || !_smgr)
 		throw exception("Impossible to find the driver");
 	_target = irr::core::vector3df(mid, _config->TILE_SIZE, mid);
@@ -285,7 +286,7 @@ void	player::stop_sound()
 
 float	player::get_volume()
 {
-	player	*current = _parent->get_current();
+	player	*current = _parent->get_current(1);
 	irr::core::position2di	pos = current->get_position();
 	irr::core::position2di	own = get_position();
 	float		distance = 1.0f;
@@ -293,7 +294,7 @@ float	player::get_volume()
 	double		cell_y = abs(pos.Y - own.Y);
 	double		max = (_config->TILE_COUNT - 2) / 2;
 
-	if (cell_x == 0 && cell_y == 0)
+	if ((cell_x == 0 && cell_y == 0) || _parent->is_multiplayer())
 		return (1);
 	else if (cell_x > max || cell_y > max)
 		return (0);
