@@ -116,11 +116,11 @@ void	game::back_to_main()
 void	game::create_players()
 {
 	std::cout << "game: creating all players...\n";
-	for (int i = 0;i < 4;i += 1){
+	for (int i = 0;i < 3;i += 1){
 		_players.push_back(std::make_unique<player>(i, this, _graphic, _config));
 		_players.back()->set_position(irr::core::position2di(i % 2 * (_config->TILE_COUNT - 3) + 1, i / 2 * (_config->TILE_COUNT - 3) + 1));
 		_players.back()->set_rotation(i / 2 * 180);
-		if (i < (_multiplayer ? 2 : 3))
+		if (i < (_multiplayer ? 1 : 2))
 			_players.back()->set_ia();
 		if (i == 2 && _multiplayer == true)
 			_current2 = _players.back().get();

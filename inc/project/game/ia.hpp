@@ -35,6 +35,8 @@ private:
 
 	player	*_parent;
 	player	*_target;
+	bomb	*_fear;
+	bool	_lock;
 	std::size_t	_last;
 	irr::core::position2di	_old_pos_target;
 	std::list<irr::core::position2di>	_path;

@@ -9,7 +9,8 @@
 #include <algorithm>
 #include <cstdlib>
 
-ia::ia(player *parent) : _parent(parent), _last(utils::get_milliseconds()), _target(nullptr)
+ia::ia(player *parent) : _parent(parent), _last(utils::get_milliseconds()), _target(nullptr), _fear(nullptr),
+_lock(false)
 {
 	std::cout << "ia: init...\n";
 	if (_parent)
@@ -26,8 +27,9 @@ ia::~ia()
 void	ia::run()
 {
 	irr::core::position2di	pos = _parent->get_position();
+	TYPE_FLOOR	*tmp = nullptr;
 
-	if (utils::get_milliseconds() - _last < 500)
+	if (utils::get_milliseconds() - _last < std::rand() % 1000)
 		return;
 	if (!_target || !_target->is_alive()){
 		_target = get_target();
@@ -36,43 +38,66 @@ void	ia::run()
 	}
 	if (!_target)
 		return;
-	if (_path.size() == 0 || check_if_target_new_pos(_target)){
+	if ((!_fear || _path.size() == 0) && check_if_near_bomb())
+		_path = get_dirs_fear(pos);
+	else if (!_fear && (_path.size() == 0 || check_if_target_new_pos(_target))){
 		_path = get_dirs_by_target(_target, pos, true);
 		if (_path.size() == 0)
 			_path = get_dirs_by_target(_target, pos, false);
 		_old_pos_target = _target->get_position();
 	}
 	if (!_parent->is_moving() && _path.size() > 0){
-		std::cout << "ia: moving to pos X - " << _path.back().X << ", pos Y - " << _path.back().Y << std::endl;
-		_parent->move_to(_path.back());
-		_path.pop_back();
+		tmp = _parent->get_parent()->get_floor(_path.back().X, _path.back().Y);
+		if (tmp && std::get<2>(*tmp) == GroundType::BRICK)
+			_parent->drop_bomb();
+		else {
+			std::cout << "ia: moving to pos X - " << _path.back().X << ", pos Y - " << _path.back().Y << std::endl;
+			_parent->move_to(_path.back());
+			_path.pop_back();
+		}
 	}
 	if (_target && check_if_near_target(_target))
 		_parent->drop_bomb();
-	if (_path.size() == 0 && check_if_near_bomb())
-		_path = get_dirs_fear(pos);
 	_last = utils::get_milliseconds();
 }
 
 std::list<irr::core::position2di>	ia::get_dirs_fear(irr::core::position2di &fear)
 {
 	std::list<irr::core::position2di>	result;
+	std::list<irr::core::position2di>	old;
 	irr::core::position2di	pos = fear;
-	irr::s32	*axe = nullptr;
 	TYPE_FLOOR	*tmp = nullptr;
 	TYPE_FLOOR	*current = _parent->get_parent()->get_floor(fear.X, fear.Y);
+	std::size_t	nbr = std::rand() % 10 + 2;
+	std::size_t	distance = 0;
+	std::size_t	tempo;
 
-	if (!current)
+	if (!current || _lock)
 		return (result);
-	axe = std::rand() % 2 ? &pos.X : &pos.Y;
-	*axe += std::rand() % 2 ? 1 : -1;
-	for (int i = 0;i < 6;i++){
-		tmp = _parent->get_parent()->get_floor(pos.X, pos.Y);
-		if (tmp && std::get<2>(*tmp) < GroundType::WALL)
-			result.push_back(pos);
-		axe = std::rand() % 2 ? &pos.X : &pos.Y;
-		*axe += std::rand() % 2 ? 1 : -1;
+	for (int i = 0;i < nbr;i++){
+		for (int r = std::rand() % 4, t = 0;t < 4;t += 1, r = std::rand()){
+			pos.X += r % 2 - 2 * (r == 3);
+			pos.Y += (r + 1) % 2 - 2 * (r == 2);
+			tmp = _parent->get_parent()->get_floor(pos.X, pos.Y);
+			tempo = abs(pos.X - fear.X) + abs(pos.Y - fear.Y);
+			if (std::find(old.begin(), old.end(), pos) == old.end() && tmp && std::get<2>(*tmp) < GroundType::WALL && tempo > distance){
+				result.push_front(pos);
+				distance = tempo;
+				break;
+			}
+			old.push_back(pos);
+			pos.X -= r % 2 - 2 * (r == 3);
+			pos.Y -= (r + 1) % 2 - 2 * (r == 2);
+		}
+		if (result.size() > 0)
+			pos = result.front();
+		if (i == nbr - 1 && distance < 2){
+			i = 0;
+			distance = 0;
+		}
 	}
+	std::cout << "ia: distance - " << distance << std::endl;
+	_lock = true;
 	return (result);
 }
 
@@ -82,12 +107,18 @@ bool	ia::check_if_near_bomb()
 	irr::core::position2di	bomb_pos;
 	irr::core::position2di	pos;
 
+	if (_fear && std::find(bombs.begin(), bombs.end(), _fear) != bombs.end())
+		return (true);
 	pos = _parent->get_position();
 	for (auto &bomb : bombs){
 		bomb_pos = bomb->get_position();
-		if (abs(bomb_pos.X - pos.X) + abs(bomb_pos.Y - pos.Y) <= 1)
+		if (abs(bomb_pos.X - pos.X) + abs(bomb_pos.Y - pos.Y) <= 1){
+			_fear = bomb;
+			_lock = false;
 			return (true);
+		}
 	}
+	_fear = nullptr;
 	return (false);
 }
 
@@ -160,7 +191,7 @@ TYPE_FLOOR	*ia::search_best_pos(std::pair<irr::s32 *, irr::s32 *> *dirs, irr::co
 	for (;current;){
 		std::cout << "ia: checking pos X - " << pos.X << ", pos Y - " << pos.Y << std::endl;
 		tmp = abs(*dirs[0].first - *dirs[1].first) + abs(*dirs[0].second - *dirs[1].second);
-		if (tmp == 0 || std::get<2>(*current) >= GroundType::WALL)
+		if (tmp == 0 || (std::get<2>(*current) >= GroundType::WALL && std::get<2>(*current) != GroundType::BRICK))
 			break;
 		side = nullptr;
 		if (other_direction != 0){
@@ -168,9 +199,13 @@ TYPE_FLOOR	*ia::search_best_pos(std::pair<irr::s32 *, irr::s32 *> *dirs, irr::co
 			side = _parent->get_parent()->get_floor(pos.X, pos.Y);
 			*dirs[0].second -= other_direction;
 		}
-		if ((distance == 0 || tmp < distance) && tmp > 0 && (!side || std::get<2>(*side) < GroundType::WALL)){
+		if ((distance == 0 || tmp < distance) && tmp > 0 && (!side || std::get<2>(*side) < GroundType::WALL || std::get<2>(*side) == GroundType::BRICK)){
+			if (choosen && std::get<2>(*current) == GroundType::BRICK)
+				break;
 			distance = tmp;
 			choosen = current;
+			if (std::get<2>(*current) == GroundType::BRICK)
+				break;
 		}
 		*dirs[0].first += direction;
 		current = _parent->get_parent()->get_floor(pos.X, pos.Y);
