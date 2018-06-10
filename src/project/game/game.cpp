@@ -111,6 +111,7 @@ void	game::back_to_main()
 	std::cout << "game: back to the main\n";
 	_smgr->clear();
 	_graphic->setEventReceiver(nullptr);
+	_project->get_sound()->removeAllSoundSources();
 	_project->set_interface(new gui(_graphic, _config, _project));
 }
 

@@ -229,9 +229,16 @@ void	player::set_rotation(const std::size_t dir)
 
 void	player::drop_bomb()
 {
+	irr::core::position2di	pos = get_position();
+	std::list<bomb *>	bombs = _parent->get_bombs();
+
 	if (_bomb)
 		return;
 	std::cout << "player: dropping a bomb\n";
+	for (auto &bomb : bombs){
+		if (bomb->get_position() == pos)
+			return;
+	}
 	_bomb = new bomb(this, _graphic, _config);
 	_parent->get_bombs().push_back(_bomb);
 }

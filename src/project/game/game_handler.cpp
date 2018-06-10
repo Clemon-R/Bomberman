@@ -72,21 +72,24 @@ bool	game_handler::key_handler(const irr::SEvent& event)
 	if (!target && !target2)
 		return (true);
 	if (!event.KeyInput.PressedDown){
-		if (_last.back() == event.KeyInput.Key){
-			if (target)
+		if (_last.size() > 0 && target){
+			if (_last.back() == event.KeyInput.Key)
 				target->stop();
-			if (target2)
-				target2->stop();
+			_last.remove(event.KeyInput.Key);
+			if (_last.size() > 0)
+				move_handler(_last.back());
 		}
-		_last.remove(event.KeyInput.Key);
-		if (_last.size() > 0)
-			move_handler(_last.back());
+		if (_last2.size() > 0){
+			if (target2 && _last2.back() == event.KeyInput.Key)
+				target2->stop();
+			_last2.remove(event.KeyInput.Key);
+			if (_last2.size() > 0)
+				move_handler(_last2.back());
+		}
 		return (true);
 	}
 	if (!move_handler(event.KeyInput.Key))
 		return (false);
-	if (std::find(_last.begin(), _last.end(), event.KeyInput.Key) == _last.end())
-		_last.push_back(event.KeyInput.Key);
 	return (true);
 }
 
@@ -97,6 +100,7 @@ bool	game_handler::move_handler(int key)
 	player	*target1 = _game.get_current(1);
 	player	*target2 = _game.get_current(2);
 	player	*target = nullptr;
+	std::list<int>	*last = nullptr;
 
 	switch (key){
 		case irr::KEY_KEY_O:
@@ -104,6 +108,7 @@ bool	game_handler::move_handler(int key)
 		case irr::KEY_KEY_S:
 		case irr::KEY_KEY_Z:
 			target = key == irr::KEY_KEY_S || key == irr::KEY_KEY_Z ? target1 : target2;
+			last = key == irr::KEY_KEY_S || key == irr::KEY_KEY_Z ? &_last : &_last2;
 			if (!target)
 				break;
 			current = target->get_parent()->get_floor(target->get_position().X, target->get_position().Y);
@@ -119,6 +124,7 @@ bool	game_handler::move_handler(int key)
 		case irr::KEY_KEY_Q:
 		case irr::KEY_KEY_D:
 			target = key == irr::KEY_KEY_Q || key == irr::KEY_KEY_D ? target1 : target2;
+			last = key == irr::KEY_KEY_Q || key == irr::KEY_KEY_D ? &_last : &_last2;
 			if (!target)
 				break;
 			current = target->get_parent()->get_floor(target->get_position().X, target->get_position().Y);
@@ -130,11 +136,13 @@ bool	game_handler::move_handler(int key)
 			break;
 
 		case irr::KEY_KEY_E:
+			last = &_last;
 			if (target1)
 				target1->drop_bomb();
 			break;
 
 		case irr::KEY_KEY_P:
+			last = &_last2;
 			if (target2)
 				target2->drop_bomb();
 			break;
@@ -142,6 +150,8 @@ bool	game_handler::move_handler(int key)
 		default:
 			return (false);
 	}
+	if (last && std::find(last->begin(), last->end(), key) == last->end())
+		last->push_back(key);
 	std::cout << "game_handler: new key event\n";
 	return (true);
 }

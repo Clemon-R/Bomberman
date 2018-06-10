@@ -28,6 +28,7 @@ private:
 
 	irr::IrrlichtDevice	*_graphic;
 	std::list<int>		_last;
+	std::list<int>		_last2;
 	game	&_game;
 };
 #endif /* !GAME_HANDLER_HPP_ */
